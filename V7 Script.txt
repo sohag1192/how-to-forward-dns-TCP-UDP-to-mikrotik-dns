@@ -1,0 +1,6 @@
+
+V7 Script:
+
+/ip/firewall/nat/
+add action=dst-nat chain=dstnat dst-port=53 protocol=tcp to-addresses=103.41.213.2 to-ports=53
+add action=dst-nat chain=dstnat dst-port=53 protocol=udp to-addresses=103.41.213.2 to-ports=53

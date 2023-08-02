@@ -1,0 +1,61 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>How To Forward DNS (TCP & UDP) to mikrotik dns </title>
+<meta name="description" content=" how to forward dns (TCP & UDP) to mikrotik dns" />
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+
+ 
+		
+  <div class="container">
+    <h1>How To Forward DNS (TCP & UDP) to Mikrotik DNS !!!</h1>
+    <p>To be continue</p>
+ 
+  </div>
+
+       <div class="container">
+   <a href="V7 Script.txt" class="button">Clink Here, DNS Sorwarding Script ( V-7 )</a>
+   </div>
+
+    <div class="container">
+   <a href="V6 Script.txt" class="button">Clink Here, DNS Sorwarding Script ( V-6 )</a>
+   </div>
+   
+   
+ <div class="grt code grt pregrt kbd ">
+	<code>
+	<span class="normaluserprompt"> </span> ✅✅✅✅ V6 Script:✅✅✅✅<br>
+	------------------------------------------------------<br>
+<span  class="normaluserprompt"> </span>/ip firewall nat<br>
+<span class="normaluserprompt"></span>add action=dst-nat chain=dstnat dst-port=53 protocol=tcp to-addresses=103.41.213.2 to-ports=53 <br>
+<span class="normaluserprompt"></span>add action=dst-nat chain=dstnat dst-port=53 protocol=udp to-addresses=103.41.213.2 to-ports=53 <br>
+</code>
+
+  <div class="grt code grt pregrt kbd ">
+	<code>
+	<span class="normaluserprompt"> </span> ✅✅✅✅ V7 Script:✅✅✅✅<br>
+	------------------------------------------------------<br>
+<span  class="normaluserprompt"> </span>/ip/firewall/nat/<br>
+<span class="normaluserprompt"></span>add action=dst-nat chain=dstnat dst-port=53 protocol=tcp to-addresses=103.41.213.2 to-ports=53 <br>
+<span class="normaluserprompt"></span>add action=dst-nat chain=dstnat dst-port=53 protocol=udp to-addresses=103.41.213.2 to-ports=53 <br>
+</code>
+
+ <div class="container">
+   <h1> DNS Sorwarding Script ( TCP ) </h1>
+<img src="img\1.png" alt="DNS" style="width:100%;">
+<img src="img\2.png" alt="DNS" style="width:100%;">
+</div>
+
+ <div class="container">
+   <h1> DNS Sorwarding Script  ( UDP ) </h1>
+<img src="img\3.png" alt="DNS" style="width:100%;">
+<img src="img\2.png" alt="DNS" style="width:100%;">
+</div>
+
+</body>
+</html>
