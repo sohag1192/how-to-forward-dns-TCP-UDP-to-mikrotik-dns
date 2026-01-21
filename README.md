@@ -1,6 +1,4 @@
-**This GitHub repository provides a practical guide for forwarding DNS (TCP & UDP) traffic to a MikroTik router.**
 
----
 
 ### 📘 Repository: [how-to-forward-dns-TCP-UDP-to-mikrotik-dns](https://github.com/sohag1192/how-to-forward-dns-TCP-UDP-to-mikrotik-dns)  
 **Author:** Md. Sohag Rana  
@@ -35,4 +33,4 @@ This project demonstrates how to **redirect all DNS traffic (both TCP and UDP on
 
 ---
 
-Would you like me to extract and explain the v6 or v7 MikroTik script logic in detail? I can also help you adapt it for your specific IP ranges or VLAN setup.
+
