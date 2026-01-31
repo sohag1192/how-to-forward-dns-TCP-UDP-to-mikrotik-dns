@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MikroTik NAT Generator | Sohag1192</title>
+    <meta name="description" content="Auto-generate MikroTik /ip/firewall/nat rules (src-nat & masquerade) for ISPs and Network Admins.">
+    <meta name="keywords" content="MikroTik, NAT, src-nat, masquerade, Firewall, Script Generator, Sohag1192">
+    <meta name="author" content="Sohag1192">
+    
+    <meta property="og:title" content="MikroTik NAT Rule Generator">
+    <meta property="og:description" content="Generate bulk NAT rules for MikroTik routers instantly.">
+    <meta property="og:type" content="website">
+
+    <style>
+        :root { 
+            --primary: #0054a6; 
+            --bg: #f4f7f9; 
+            --text: #333; 
+            --success: #27ae60;
+            --danger: #c0392b;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background: var(--bg); 
+            color: var(--text);
+            display: flex; 
+            justify-content: center; 
+            padding: 20px; 
+            margin: 0;
+        }
+
+        .card { 
+            background: white; 
+            width: 100%; 
+            max-width: 950px; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08); 
+            border-top: 6px solid var(--primary); 
+        }
+
+        .header { 
+            text-align: center; 
+            border-bottom: 2px solid #eee; 
+            margin-bottom: 25px; 
+            padding-bottom: 15px;
+        }
+
+        .header h2 { margin: 0; color: var(--primary); }
+        .header p { color: #666; margin-top: 5px; font-size: 0.9em; }
+
+        /* Input Grid */
+        .grid-inputs { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 15px; 
+            align-items: end; 
+            margin-bottom: 25px; 
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px; color: #444; }
+        
+        input, select { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            box-sizing: border-box; 
+            font-size: 14px;
+        }
+        input:focus, select:focus { border-color: var(--primary); outline: none; }
+
+        /* Buttons */
+        button { cursor: pointer; border: none; border-radius: 5px; font-weight: 600; transition: 0.2s; }
+        
+        .add-btn { 
+            background: var(--success); color: white; padding: 10px 25px; width: 100%; 
+        }
+        .add-btn:hover { background: #219150; }
+
+        .action-bar { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+        
+        .clear-btn { background: var(--danger); color: white; padding: 10px 20px; }
+        .clear-btn:hover { background: #a93226; }
+
+        .copy-btn { background: var(--primary); color: white; padding: 10px 20px; }
+        .copy-btn:hover { background: #004286; }
+
+        /* Table */
+        .table-container { overflow-x: auto; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: left; }
+        th { background: #0054a6; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        
+        .del-btn { 
+            color: var(--danger); background: none; font-weight: bold; font-size: 16px; padding: 0 10px;
+        }
+
+        /* Terminal Output */
+        .terminal { 
+            background: #1e1e1e; 
+            color: #00ff00; 
+            padding: 20px; 
+            border-radius: 8px; 
+            position: relative; 
+            min-height: 120px; 
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        }
+        pre { margin: 0; white-space: pre-wrap; font-family: 'Consolas', monospace; font-size: 13px; line-height: 1.5; }
+
+        .footer { text-align: center; margin-top: 20px; font-size: 13px; color: #888; }
+        .footer a { color: var(--primary); text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h2>🔥 MikroTik SRC-NAT Generator</h2>
+        <p>Build complex NAT lists easily | <strong>Src-Nat & Masquerade</strong></p>
+    </div>
+
+    <div class="grid-inputs">
+        <div style="flex: 0 0 120px;">
+            <label>Action</label>
+            <select id="action">
+                <option value="src-nat">src-nat</option>
+                <option value="masquerade">masquerade</option>
+            </select>
+        </div>
+        <div style="flex: 2;">
+            <label>Out-Interface Name</label>
+            <input type="text" id="interface" placeholder="e.g. 1.1-2641-BDIX">
+        </div>
+        <div style="flex: 2;">
+            <label>To-Address (Public IP)</label>
+            <input type="text" id="ip" placeholder="e.g. 103.XXX.XXX.XXX">
+        </div>
+        <div style="flex: 1;">
+            <label>Comment</label>
+            <input type="text" id="comment" placeholder="NAT-Comment">
+        </div>
+        <div style="flex: 0 0 100px;">
+            <button class="add-btn" onclick="addRule()">+ ADD</button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th width="15%">Action</th>
+                    <th width="30%">Interface</th>
+                    <th width="30%">To-Address</th>
+                    <th width="20%">Comment</th>
+                    <th width="5%">X</th>
+                </tr>
+            </thead>
+            <tbody id="listBody">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="terminal">
+        <pre id="output"># Generated scripts will appear here...</pre>
+    </div>
+    
+    <div class="action-bar">
+        <button class="clear-btn" onclick="clearAll()">Clear All</button>
+        <button class="copy-btn" onclick="copyCode()">Copy Script</button>
+    </div>
+
+    <div class="footer">
+        Developed by <a href="https://github.com/sohag1192/" target="_blank">Sohag1192</a>
+    </div>
+</div>
+
+<script>
+    let rules = [];
+
+    // Helper to trigger button on Enter key
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            addRule();
+        }
+    });
+
+    function addRule() {
+        const action = document.getElementById('action').value;
+        const iface = document.getElementById('interface').value.trim();
+        const ip = document.getElementById('ip').value.trim();
+        const comment = document.getElementById('comment').value.trim();
+
+        if (!iface) {
+            alert("Error: 'Out-Interface' is required!");
+            document.getElementById('interface').focus();
+            return;
+        }
+
+        // Add to array
+        rules.push({ action, iface, ip, comment });
+        render();
+        
+        // Reset inputs but keep 'Action' same for faster entry
+        document.getElementById('interface').value = '';
+        document.getElementById('ip').value = '';
+        document.getElementById('comment').value = '';
+        document.getElementById('interface').focus();
+    }
+
+    function removeRule(index) {
+        rules.splice(index, 1);
+        render();
+    }
+
+    function clearAll() {
+        if(confirm("Are you sure you want to clear the list?")) {
+            rules = [];
+            render();
+        }
+    }
+
+    function render() {
+        const tbody = document.getElementById('listBody');
+        const output = document.getElementById('output');
+        
+        // 1. Render Table
+        if (rules.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">No rules added yet.</td></tr>';
+        } else {
+            tbody.innerHTML = rules.map((r, i) => `
+                <tr>
+                    <td><b>${r.action}</b></td>
+                    <td>${r.iface}</td>
+                    <td>${r.ip || '<span style="color:#ccc">Dynamic</span>'}</td>
+                    <td>${r.comment}</td>
+                    <td style="text-align:center;"><button class="del-btn" onclick="removeRule(${i})">&times;</button></td>
+                </tr>
+            `).join('');
+        }
+
+        // 2. Generate Script
+        if (rules.length === 0) {
+            output.textContent = "# Add rules above to generate script...";
+            return;
+        }
+
+        let script = `/ip firewall nat\n`;
+        script += rules.map(r => {
+            let line = `add action=${r.action} chain=srcnat out-interface=${r.iface}`;
+            
+            // Logic: Add to-address if user typed it. 
+            // Note: Masquerade usually doesn't need to-address unless specified (rare), but src-nat needs it.
+            if (r.ip) {
+                line += ` to-addresses=${r.ip}`;
+            }
+            
+            if (r.comment) {
+                line += ` comment="${r.comment}"`;
+            }
+            
+            return line;
+        }).join('\n');
+
+        output.textContent = script;
+    }
+
+    function copyCode() {
+        const text = document.getElementById('output').textContent;
+        if(text.startsWith("#") || text.trim() === "") {
+            alert("Nothing to copy!");
+            return;
+        }
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "Copied!";
+            btn.style.backgroundColor = "#27ae60";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.backgroundColor = "";
+            }, 2000);
+        });
+    }
+
+    // Initial render
+    render();
+</script>
+
+</body>
+</html>

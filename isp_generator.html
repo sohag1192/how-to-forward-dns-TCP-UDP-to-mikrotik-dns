@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MikroTik ISP Config Generator | BDIX, GGC, FB, CDN</title>
+    <meta name="description" content="Generate complete MikroTik ISP configurations: IP Pools, PPPoE Profiles, NAT, Mangle, and Traffic Shaping (PCQ) for BDIX, GGC, Facebook, CDN, FTP, and TikTok.">
+    <meta name="keywords" content="MikroTik, ISP Script, RouterOS, BDIX Queue, GGC, Facebook Cache, PCQ, Bandwidth Management, Sohag1192">
+    <meta name="author" content="Sohag1192">
+    
+    <meta property="og:title" content="MikroTik ISP Config Generator v2.0">
+    <meta property="og:description" content="Auto-generate ISP scripts with Split Queues for BDIX, GGC, FB, and CDN.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://github.com/sohag1192/UFW-Firewall-Generator/">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
+
+    <style>
+        :root { 
+            --primary: #2c3e50; 
+            --accent: #2980b9; 
+            --bg: #f4f6f8; 
+            --code-bg: #1e1e1e; 
+            --border: #e0e0e0;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding: 20px; 
+            color: #333;
+            display: flex; 
+            justify-content: center; 
+        }
+
+        .app-container { 
+            width: 100%; 
+            max-width: 1200px; 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        
+        /* Header */
+        .header { 
+            background: var(--primary); 
+            color: white; 
+            padding: 25px; 
+            text-align: center; 
+            border-bottom: 4px solid var(--accent);
+        }
+        .header h1 { margin: 0; font-size: 26px; letter-spacing: 0.5px; }
+        .header p { margin: 8px 0 0; opacity: 0.85; font-size: 14px; }
+
+        /* Sections */
+        .section-title {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid var(--border);
+            border-top: 1px solid var(--border);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Grid Layouts */
+        .general-controls { 
+            padding: 20px; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px; 
+        }
+
+        .interface-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            gap: 15px; 
+            padding: 20px; 
+            background: #fff; 
+        }
+
+        .control-group label { 
+            display: block; 
+            font-weight: 600; 
+            margin-bottom: 6px; 
+            color: #555; 
+            font-size: 0.85rem; 
+        }
+        .control-group input { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-size: 14px; 
+            transition: 0.3s;
+        }
+        .control-group input:focus { 
+            border-color: var(--accent); 
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.1); 
+        }
+
+        /* Table */
+        .plans-section { padding: 0 0 20px 0; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th { background: #34495e; color: white; text-align: left; padding: 12px 15px; font-size: 0.9rem; }
+        td { padding: 8px 15px; border-bottom: 1px solid #eee; }
+        tr:hover { background-color: #f9f9f9; }
+        
+        input.table-input { 
+            width: 100%; 
+            padding: 8px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            font-family: inherit;
+        }
+
+        /* Buttons */
+        .btn-gen { 
+            background: var(--accent); 
+            color: white; 
+            padding: 15px; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: bold; 
+            width: 100%; 
+            font-size: 1.1rem; 
+            transition: background 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-gen:hover { background: #1f618d; }
+
+        /* Output Area */
+        .output-section { padding: 25px; background: #fafafa; border-top: 1px solid #ddd; position: relative; }
+        
+        .copy-btn { 
+            position: absolute; 
+            top: 25px; 
+            right: 25px; 
+            background: #27ae60; 
+            color: white; 
+            border: none; 
+            padding: 8px 18px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: 600;
+            font-size: 13px;
+            z-index: 10;
+        }
+        .copy-btn:hover { background: #219150; }
+
+        pre { 
+            background: var(--code-bg); 
+            color: #a9b7c6; 
+            padding: 25px; 
+            border-radius: 8px; 
+            overflow-x: auto; 
+            font-family: 'Consolas', 'Monaco', monospace; 
+            height: 600px; 
+            font-size: 13px; 
+            line-height: 1.5; 
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.85rem;
+            color: #777;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+        }
+        .footer a { color: var(--accent); text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h1>🛠️ MikroTik ISP Config Generator</h1>
+        <p>Pools • Profiles • NAT • Mangle • PCQ Queues (BDIX, GGC, FB, CDN)</p>
+    </div>
+
+    <div class="section-title">⚙️ General Network Settings</div>
+    <div class="general-controls">
+        <div class="control-group">
+            <label>Base IP Prefix</label>
+            <input type="text" id="baseIp" value="172.21" placeholder="e.g. 172.21">
+        </div>
+        <div class="control-group">
+            <label>Start Octet</label>
+            <input type="number" id="startOctet" value="96" placeholder="e.g. 96">
+        </div>
+        <div class="control-group">
+            <label>DNS Servers</label>
+            <input type="text" id="dns" value="8.8.8.8,8.8.4.4">
+        </div>
+    </div>
+
+    <div class="section-title">🔌 Interface Names (Queue Targets)</div>
+    <div class="interface-grid">
+        <div class="control-group">
+            <label>🇧🇩 BDIX Interface</label>
+            <input type="text" id="ifBDIX" value="1.1-2641-BDIX">
+        </div>
+        <div class="control-group">
+            <label>🔍 GGC Interface</label>
+            <input type="text" id="ifGGC" value="1.3-2643-GGC">
+        </div>
+        <div class="control-group">
+            <label>📘 Facebook (FB)</label>
+            <input type="text" id="ifFB" value="1.4-2644-FB">
+        </div>
+        <div class="control-group">
+            <label>🚀 CDN (Akamai)</label>
+            <input type="text" id="ifCDN" value="1.5-2645-CDN">
+        </div>
+        <div class="control-group">
+            <label>📂 FTP Interface</label>
+            <input type="text" id="ifFTP" value="1.7-2647-FTP">
+        </div>
+        <div class="control-group">
+            <label>🎵 TikTok (TIK)</label>
+            <input type="text" id="ifTIK" value="1.8-2648-TIK">
+        </div>
+    </div>
+
+    <div class="section-title">📦 Package Configuration</div>
+    <div class="plans-section">
+        <table id="plansTable">
+            <thead>
+                <tr>
+                    <th width="5%">ID</th>
+                    <th width="15%">Plan Name</th>
+                    <th width="10%">Internet (M)</th>
+                    <th width="10%">BDIX/FTP (M)</th>
+                    <th width="10%">GGC (M)</th>
+                    <th width="10%">FB (M)</th>
+                    <th width="10%">CDN (M)</th>
+                    <th width="10%">TikTok (M)</th>
+                    <th width="10%">Price (Tk)</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+    
+    <button class="btn-gen" onclick="generateConfig()">
+        ⚡ Generate Full Configuration
+    </button>
+
+    <div class="output-section">
+        <button class="copy-btn" onclick="copyText()">📋 Copy Code</button>
+        <pre id="output"># Configure your plans above and click Generate...</pre>
+    </div>
+
+    <div class="footer">
+        Developed by <a href="https://github.com/sohag1192/" target="_blank">Sohag1192</a> | 
+        <span style="font-size:11px">Part of UFW Firewall Generator Project</span>
+    </div>
+</div>
+
+<script>
+    // Default Data
+    const defaultPlans = [
+        {name: "Bronze",   net: 20,  bdix: 50,  ggc: 30, fb: 30, cdn: 30, tik: 30, price: 500},
+        {name: "Silver",   net: 25,  bdix: 60,  ggc: 40, fb: 40, cdn: 40, tik: 40, price: 600},
+        {name: "Gold",     net: 35,  bdix: 70,  ggc: 50, fb: 50, cdn: 50, tik: 50, price: 700},
+        {name: "Platinum", net: 45,  bdix: 80,  ggc: 60, fb: 60, cdn: 60, tik: 60, price: 800},
+        {name: "Diamond",  net: 55,  bdix: 100, ggc: 70, fb: 70, cdn: 70, tik: 70, price: 1000},
+        {name: "Sapphire", net: 65,  bdix: 100, ggc: 80, fb: 80, cdn: 80, tik: 80, price: 1200},
+        {name: "Ruby",     net: 75,  bdix: 100, ggc: 90, fb: 90, cdn: 90, tik: 90, price: 1400},
+        {name: "Emerald",  net: 85,  bdix: 100, ggc: 90, fb: 90, cdn: 90, tik: 90, price: 1600},
+        {name: "Pearl",    net: 95,  bdix: 100, ggc: 100,fb: 100,cdn: 100,tik: 100,price: 1800},
+        {name: "Onyx",     net: 100, bdix: 100, ggc: 100,fb: 100,cdn: 100,tik: 100,price: 2000}
+    ];
+
+    function initTable() {
+        const tbody = document.querySelector('#plansTable tbody');
+        tbody.innerHTML = defaultPlans.map((p, i) => `
+            <tr>
+                <td>P${i+1}</td>
+                <td><input class="table-input" id="n${i}" value="${p.name}"></td>
+                <td><input class="table-input" type="number" id="net${i}" value="${p.net}"></td>
+                <td><input class="table-input" type="number" id="bdix${i}" value="${p.bdix}"></td>
+                <td><input class="table-input" type="number" id="ggc${i}" value="${p.ggc}"></td>
+                <td><input class="table-input" type="number" id="fb${i}" value="${p.fb}"></td>
+                <td><input class="table-input" type="number" id="cdn${i}" value="${p.cdn}"></td>
+                <td><input class="table-input" type="number" id="tik${i}" value="${p.tik}"></td>
+                <td><input class="table-input" type="number" id="p${i}" value="${p.price}"></td>
+            </tr>
+        `).join('');
+    }
+
+    function generateConfig() {
+        const baseIp = document.getElementById('baseIp').value.trim();
+        let currentOctet = parseInt(document.getElementById('startOctet').value);
+        const dns = document.getElementById('dns').value;
+
+        // Interfaces
+        const ifBDIX = document.getElementById('ifBDIX').value;
+        const ifGGC = document.getElementById('ifGGC').value;
+        const ifFB = document.getElementById('ifFB').value;
+        const ifCDN = document.getElementById('ifCDN').value;
+        const ifFTP = document.getElementById('ifFTP').value;
+        const ifTIK = document.getElementById('ifTIK').value;
+
+        let sPools = "/ip pool\n";
+        let sProfiles = "/ppp profile\n";
+        let sNAT = "/ip firewall nat\n";
+        let sMangle = "/ip firewall mangle\n";
+        let sRaw = "/ip firewall raw\nadd chain=prerouting action=drop src-address-list=2_RT_BLOCK ttl=1-62 comment=\"Drop Shared Connection\"\n";
+        let sPCQ = "/queue type\n";
+        let sQueues = "/queue simple\n";
+
+        // Mangle Header
+        sMangle += `add chain=forward action=add-src-to-address-list address-list=2_RT_BLOCK address-list-timeout=30s in-interface=all-ppp connection-state=established ttl=1-61 comment="Detect Shared Connection"\n`;
+
+        for(let i=0; i<10; i++) {
+            const name = document.getElementById(`n${i}`).value;
+            const net = document.getElementById(`net${i}`).value;
+            const bdix = document.getElementById(`bdix${i}`).value;
+            const ggc = document.getElementById(`ggc${i}`).value;
+            const fb = document.getElementById(`fb${i}`).value;
+            const cdn = document.getElementById(`cdn${i}`).value;
+            const tik = document.getElementById(`tik${i}`).value;
+            const price = document.getElementById(`p${i}`).value;
+
+            // IP Math (Each plan gets a /20 block = 16 subnets)
+            const startRange = currentOctet;
+            const endRange = currentOctet + 15;
+            const target = `${baseIp}.${startRange}.0/20`;
+
+            // 1. POOLS
+            const poolName = `pool_P${i+1}_${name.toLowerCase()}`;
+            sPools += `add name="${poolName}" ranges=${baseIp}.${startRange}.2-${baseIp}.${endRange}.254\n`;
+
+            // 2. PROFILES
+            sProfiles += `add name="P${i+1}_${name}_${net}Mbps" local-address=${baseIp}.${startRange}.1 remote-address="${poolName}" only-one=yes dns-server=${dns} rate-limit=${net}M/${net}M comment="Price: ${price} Tk"\n`;
+
+            // 3. NAT
+            sNAT += `add chain=srcnat action=masquerade src-address=${target} comment="NAT for P${i+1} ${name}"\n`;
+
+            // 4. PCQ TYPES (Creating unique types to avoid conflicts)
+            sPCQ += `# --- P${i+1} Types ---\n`;
+            sPCQ += `add kind=pcq name="pcq_P${i+1}_net_down" pcq-rate=${net}M pcq-classifier=dst-address\n`;
+            sPCQ += `add kind=pcq name="pcq_P${i+1}_net_up" pcq-rate=${net}M pcq-classifier=src-address\n`;
+            
+            sPCQ += `add kind=pcq name="pcq_P${i+1}_bdix_down" pcq-rate=${bdix}M pcq-classifier=dst-address\n`;
+            sPCQ += `add kind=pcq name="pcq_P${i+1}_bdix_up" pcq-rate=${bdix}M pcq-classifier=src-address\n`;
+
+            sPCQ += `add kind=pcq name="pcq_P${i+1}_ggc_down" pcq-rate=${ggc}M pcq-classifier=dst-address\n`;
+            sPCQ += `add kind=pcq name="pcq_P${i+1}_ggc_up" pcq-rate=${ggc}M pcq-classifier=src-address\n`;
+
+            sPCQ += `add kind=pcq name="pcq_P${i+1}_fb_down" pcq-rate=${fb}M pcq-classifier=dst-address\n`;
+            sPCQ += `add kind=pcq name="pcq_P${i+1}_fb_up" pcq-rate=${fb}M pcq-classifier=src-address\n`;
+
+            sPCQ += `add kind=pcq name="pcq_P${i+1}_cdn_down" pcq-rate=${cdn}M pcq-classifier=dst-address\n`;
+            sPCQ += `add kind=pcq name="pcq_P${i+1}_cdn_up" pcq-rate=${cdn}M pcq-classifier=src-address\n`;
+
+            sPCQ += `add kind=pcq name="pcq_P${i+1}_tik_down" pcq-rate=${tik}M pcq-classifier=dst-address\n`;
+            sPCQ += `add kind=pcq name="pcq_P${i+1}_tik_up" pcq-rate=${tik}M pcq-classifier=src-address\n`;
+
+            // 5. SIMPLE QUEUES (Boosts First)
+            sQueues += `# --- P${i+1} Queues ---\n`;
+            sQueues += `add name="BDIX_P${i+1}" target=${target} dst="${ifBDIX}" queue=pcq_P${i+1}_bdix_up/pcq_P${i+1}_bdix_down place-before=0\n`;
+            sQueues += `add name="FTP_P${i+1}" target=${target} dst="${ifFTP}" queue=pcq_P${i+1}_bdix_up/pcq_P${i+1}_bdix_down place-before=0\n`; 
+            sQueues += `add name="GGC_P${i+1}" target=${target} dst="${ifGGC}" queue=pcq_P${i+1}_ggc_up/pcq_P${i+1}_ggc_down place-before=0\n`;
+            sQueues += `add name="FB_P${i+1}" target=${target} dst="${ifFB}" queue=pcq_P${i+1}_fb_up/pcq_P${i+1}_fb_down place-before=0\n`;
+            sQueues += `add name="CDN_P${i+1}" target=${target} dst="${ifCDN}" queue=pcq_P${i+1}_cdn_up/pcq_P${i+1}_cdn_down place-before=0\n`;
+            sQueues += `add name="TIK_P${i+1}" target=${target} dst="${ifTIK}" queue=pcq_P${i+1}_tik_up/pcq_P${i+1}_tik_down place-before=0\n`;
+
+            // 6. MAIN INTERNET QUEUE (Last for this user)
+            sQueues += `add name="P${i+1}_${name}_Block" target=${target} queue=pcq_P${i+1}_net_up/pcq_P${i+1}_net_down comment="--- MAIN INTERNET QUEUE P${i+1} ---"\n\n`;
+
+            // Increment IP Octet
+            currentOctet += 16;
+        }
+
+        const fullScript = `# ==========================================
+# MIKROTIK ISP GENERATOR (FULL CONFIG)
+# Base Network: ${baseIp}.0.0
+# Generated Date: ${new Date().toISOString().split('T')[0]}
+# ==========================================
+
+# 1. IP POOLS
+${sPools}
+:global pppOnUp ":local remoteAddr \\$\\"remote-address\\"; :local callerId \\$\\"caller-id\\"; :log info \\"PPPLOG \\$user \\$callerId \\$remoteAddr\\""
+
+# 2. PPP PROFILES
+${sProfiles}
+
+# 3. FIREWALL NAT
+${sNAT}
+
+# 4. FIREWALL MANGLE
+${sMangle}
+
+# 5. FIREWALL RAW
+${sRaw}
+
+# 6. PCQ TYPES
+${sPCQ}
+
+# 7. SIMPLE QUEUES
+${sQueues}
+# --- END OF SCRIPT ---`;
+
+        document.getElementById('output').textContent = fullScript;
+    }
+
+    function copyText() {
+        navigator.clipboard.writeText(document.getElementById('output').textContent);
+        alert("Script Copied to Clipboard! 📋");
+    }
+
+    initTable();
+    // Generate preview
+    setTimeout(generateConfig, 500);
+</script>
+
+</body>
+</html>
