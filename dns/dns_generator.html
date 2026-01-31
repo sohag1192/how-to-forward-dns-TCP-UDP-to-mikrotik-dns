@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MikroTik DNS NAT Generator | Sohag1192</title>
+    <meta name="description" content="Generate clean MikroTik /ip/firewall/nat rules for DNS forwarding. Includes visual guides for TCP & UDP.">
+    <meta name="keywords" content="MikroTik, DNS, NAT, dst-nat, RouterOS, Firewall, Sohag1192">
+    <meta name="author" content="Sohag1192">
+    
+    <meta property="og:title" content="MikroTik DNS NAT Generator">
+    <meta property="og:description" content="Auto-generate DNS rules with visual setup guides.">
+    <meta property="og:url" content="https://github.com/sohag1192/UFW-Firewall-Generator/">
+
+    <style>
+        :root {
+            --primary: #0054a6;
+            --bg: #f4f7f9;
+            --card-bg: #ffffff;
+            --text: #333;
+            --border: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* Common Card Style */
+        .card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border-top: 6px solid var(--primary);
+        }
+
+        /* Generator Section Styles */
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        .header h1 { margin: 0; color: var(--primary); font-size: 24px; }
+        .header p { margin: 5px 0 0; color: #666; font-size: 14px; }
+        
+        .badge {
+            display: inline-block; background: #e3f2fd; color: #1565c0;
+            padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-top: 5px;
+        }
+
+        .input-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #444; }
+        .input-group input {
+            width: 100%; padding: 12px; border: 2px solid var(--border);
+            border-radius: 6px; font-size: 16px; box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus { border-color: var(--primary); outline: none; }
+
+        .terminal-window {
+            background: #1e1e1e; border-radius: 8px; position: relative;
+            margin-top: 25px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .terminal-header {
+            background: #333; color: #fff; padding: 8px 15px;
+            border-radius: 8px 8px 0 0; font-size: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .copy-btn {
+            background: var(--primary); color: white; border: none;
+            padding: 5px 12px; border-radius: 4px; cursor: pointer;
+            font-size: 12px; font-weight: bold;
+        }
+
+        pre {
+            color: #00ff00; padding: 20px; margin: 0; overflow-x: auto;
+            white-space: pre-wrap; font-family: 'Consolas', monospace; font-size: 14px;
+        }
+
+        /* Visual Guide Styles */
+        .guide-title {
+            text-align: center; color: #444; margin-bottom: 20px;
+            font-size: 20px; border-bottom: 2px solid var(--primary);
+            display: inline-block; padding-bottom: 5px;
+        }
+        
+        .step-block { margin-bottom: 40px; }
+        .step-label { font-weight: bold; color: var(--primary); margin-bottom: 10px; display: block; }
+        
+        img {
+            width: 100%; height: auto; border-radius: 8px;
+            border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+
+        .footer { text-align: center; margin-top: 10px; font-size: 13px; color: #888; }
+        .footer a { color: var(--primary); text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+
+    <div class="card">
+        <div class="header">
+            <h1>🛰️ MikroTik DNS NAT Generator</h1>
+            <p><strong>EN:</strong> Clean dst-nat rules | <strong>BN:</strong> ক্লিন dst-nat রুলস</p>
+            <div class="badge">v6 & v7 Compatible</div>
+        </div>
+
+        <div class="input-group">
+            <label for="targetIp">Target DNS IP / টার্গেট ডিএনএস আইপি:</label>
+            <input type="text" id="targetIp" value="8.8.8.8" placeholder="e.g. 8.8.8.8" oninput="generateScript()">
+        </div>
+
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <span>Script Output (/ip/firewall/nat)</span>
+                <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+            </div>
+            <pre id="output"></pre>
+        </div>
+    </div>
+
+    <div class="card">
+        <h1 style="text-align:center; color:var(--primary); margin-bottom:30px;">
+            📸 How To Forward DNS (TCP & UDP)
+        </h1>
+
+        <div class="step-block">
+            <h2 class="guide-title">1. DNS Forwarding (TCP)</h2>
+            <span class="step-label">Step A: General Settings</span>
+            <img src="img/1.png" alt="DNS TCP Settings Step 1">
+            
+            <span class="step-label">Step B: Action Tab</span>
+            <img src="img/2.png" alt="DNS TCP Settings Step 2">
+        </div>
+
+        <div class="step-block">
+            <h2 class="guide-title">2. DNS Forwarding (UDP)</h2>
+            <span class="step-label">Step A: General Settings</span>
+            <img src="img/3.png" alt="DNS UDP Settings Step 1">
+            
+            <span class="step-label">Step B: Action Tab</span>
+            <img src="img/2.png" alt="DNS UDP Settings Step 2">
+        </div>
+
+        <div class="footer">
+            Developed by <a href="https://github.com/sohag1192/" target="_blank">Sohag1192</a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function generateScript() {
+        const ip = document.getElementById('targetIp').value.trim() || '8.8.8.8';
+        
+        // Clean script format as requested
+        const script = `/ip/firewall/nat/
+add action=dst-nat chain=dstnat dst-port=53 protocol=tcp to-addresses=${ip} to-ports=53
+add action=dst-nat chain=dstnat dst-port=53 protocol=udp to-addresses=${ip} to-ports=53`;
+
+        document.getElementById('output').textContent = script;
+    }
+
+    function copyCode() {
+        const code = document.getElementById('output').textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "Copied!";
+            btn.style.backgroundColor = "#27ae60";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.backgroundColor = "";
+            }, 2000);
+        });
+    }
+
+    // Initialize on load
+    window.onload = generateScript;
+</script>
+
+</body>
+</html>
