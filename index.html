@@ -3,84 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MikroTik NAT DNS Generator v6/v7</title>
+    <title>MikroTik DNS NAT Generator | Sohag1192</title>
+    <meta name="description" content="Generate clean MikroTik /ip/firewall/nat rules for DNS forwarding. Supports RouterOS v6 & v7. Developed by Sohag1192.">
+    <meta name="keywords" content="MikroTik, DNS, NAT, dst-nat, RouterOS, Firewall, Sohag1192, Script Generator">
+    <meta name="author" content="Sohag1192">
+    
+    <meta property="og:title" content="MikroTik DNS NAT Generator">
+    <meta property="og:description" content="Auto-generate DNS redirection rules for MikroTik. Clean & Error-free.">
+    <meta property="og:url" content="https://github.com/sohag1192/UFW-Firewall-Generator/">
+    <meta property="og:type" content="website">
+
     <style>
-        :root { --ros-blue: #0054a6; --ros-v7: #6c5ce7; --dark: #1e272e; }
-        body { font-family: 'Segoe UI', sans-serif; background: #eceff1; display: flex; justify-content: center; padding: 20px; }
-        .container { background: white; width: 100%; max-width: 850px; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .ver-toggle { display: flex; gap: 10px; margin-bottom: 20px; }
-        .ver-btn { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center; transition: 0.3s; }
-        .ver-btn.active { border-color: var(--ros-blue); background: var(--ros-blue); color: white; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-weight: 600; margin-bottom: 5px; }
-        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
-        .terminal { background: var(--dark); color: #00d2d3; padding: 20px; border-radius: 8px; position: relative; margin-top: 15px; }
-        pre { margin: 0; white-space: pre-wrap; font-family: 'Consolas', monospace; font-size: 14px; }
-        .copy-btn { position: absolute; top: 10px; right: 10px; background: #333; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-        .copy-btn:hover { background: #444; }
+        :root {
+            --primary: #0054a6; /* MikroTik Blue */
+            --bg: #f4f7f9;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --terminal-bg: #1e1e1e;
+            --terminal-text: #00ff00;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-top: 6px solid var(--primary);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 24px;
+        }
+
+        .header p {
+            margin: 5px 0 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #444;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .terminal-window {
+            background: var(--terminal-bg);
+            border-radius: 8px;
+            position: relative;
+            margin-top: 25px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .terminal-header {
+            background: #333;
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 8px 8px 0 0;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .copy-btn:hover {
+            background: #004286;
+        }
+
+        pre {
+            color: var(--terminal-text);
+            padding: 20px;
+            margin: 0;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📡 MikroTik /ip/firewall/nat/ Generator</h2>
-    
-    <div class="ver-toggle">
-        <div id="btnV6" class="ver-btn active" onclick="setVersion('v6')">RouterOS v6</div>
-        <div id="btnV7" class="ver-btn" onclick="setVersion('v7')">RouterOS v7</div>
+    <div class="header">
+        <h1>🛰️ MikroTik DNS NAT Generator</h1>
+        <p><strong>EN:</strong> Clean dst-nat rules | <strong>BN:</strong> ক্লিন dst-nat রুলস</p>
+        <div class="badge">v6 & v7 Compatible</div>
     </div>
 
     <div class="input-group">
-        <label>Target DNS Server IP / গন্তব্য ডিএনএস আইপি</label>
-        <input type="text" id="targetIp" value="8.8.8.8" oninput="generate()">
+        <label for="targetIp">Target DNS IP / টার্গেট ডিএনএস আইপি:</label>
+        <input type="text" id="targetIp" value="103.41.213.2" placeholder="e.g. 8.8.8.8" oninput="generateScript()">
     </div>
 
-    <div class="terminal">
-        <button class="copy-btn" onclick="copyText()">Copy</button>
+    <div class="terminal-window">
+        <div class="terminal-header">
+            <span>Script Output (/ip/firewall/nat)</span>
+            <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+        </div>
         <pre id="output"></pre>
     </div>
 
-    <p style="font-size: 0.85em; color: #666; margin-top: 15px;">
-        <strong>EN:</strong> v7 includes optimization for newer Kernel stacks. <br>
-        <strong>BN:</strong> v7-এ নতুন কার্নেল স্ট্যাকের জন্য অপ্টিমাইজেশন অন্তর্ভুক্ত করা হয়েছে।
-    </p>
+    <div class="footer">
+        Developed by <a href="https://github.com/sohag1192/" target="_blank">Sohag1192</a>
+        <br>
+        <span style="font-size: 11px;">Part of the UFW Firewall Generator Project</span>
+    </div>
 </div>
 
 <script>
-    let currentVer = 'v6';
+    function generateScript() {
+        const ip = document.getElementById('targetIp').value.trim() || '103.41.213.2';
+        
+        // Explicitly clean output without ipsec-policy or connection-type
+        const script = `/ip/firewall/nat/
+add action=dst-nat chain=dstnat dst-port=53 protocol=tcp to-addresses=${ip} to-ports=53
+add action=dst-nat chain=dstnat dst-port=53 protocol=udp to-addresses=${ip} to-ports=53`;
 
-    function setVersion(v) {
-        currentVer = v;
-        document.getElementById('btnV6').classList.toggle('active', v === 'v6');
-        document.getElementById('btnV7').classList.toggle('active', v === 'v7');
-        generate();
+        document.getElementById('output').textContent = script;
     }
 
-    function generate() {
-        const ip = document.getElementById('targetIp').value || '8.8.8.8';
-        let code = "";
-
-        if(currentVer === 'v6') {
-            code = `# RouterOS v6 Configuration\n/ip firewall nat\n`;
-            code += `add action=dst-nat chain=dstnat dst-port=53 protocol=tcp to-addresses=${ip} to-ports=53 comment="v6_DNS_TCP"\n`;
-            code += `add action=dst-nat chain=dstnat dst-port=53 protocol=udp to-addresses=${ip} to-ports=53 comment="v6_DNS_UDP"`;
-        } else {
-            code = `# RouterOS v7 Configuration (Optimized)\n/ip firewall nat\n`;
-            code += `add action=dst-nat chain=dstnat dst-port=53 protocol=tcp to-addresses=${ip} to-ports=53 comment="v7_DNS_TCP"\\
-    connection-type="" ipsec-policy=out,none\n`;
-            code += `add action=dst-nat chain=dstnat dst-port=53 protocol=udp to-addresses=${ip} to-ports=53 comment="v7_DNS_UDP"\\
-    connection-type="" ipsec-policy=out,none`;
-        }
-
-        document.getElementById('output').innerText = code;
+    function copyCode() {
+        const code = document.getElementById('output').textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "Copied!";
+            btn.style.backgroundColor = "#27ae60";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.backgroundColor = ""; // Reset to CSS default
+            }, 2000);
+        });
     }
 
-    function copyText() {
-        navigator.clipboard.writeText(document.getElementById('output').innerText);
-        alert("Copied to clipboard! / ক্লিপবোর্ডে কপি করা হয়েছে!");
-    }
-
-    generate();
+    // Initialize on load
+    window.onload = generateScript;
 </script>
 
 </body>
