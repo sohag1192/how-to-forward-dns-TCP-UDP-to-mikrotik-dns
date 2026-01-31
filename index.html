@@ -1,61 +1,64 @@
-
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>How To Forward DNS (TCP & UDP) to mikrotik dns </title>
-<meta name="description" content=" how to forward dns (TCP & UDP) to mikrotik dns" />
-<link rel="stylesheet" href="css/style.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MikroTik /ip/firewall/nat/ Generator</title>
+    <style>
+        :root { --mikrotik-red: #d32f2f; --dark-bg: #121212; --accent: #00e676; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; width: 100%; max-width: 800px; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-top: 5px solid var(--mikrotik-red); }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; }
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; box-sizing: border-box; }
+        input:focus { border-color: var(--mikrotik-red); outline: none; box-shadow: 0 0 5px rgba(211, 47, 47, 0.2); }
+        .terminal { background: var(--dark-bg); color: var(--accent); padding: 20px; border-radius: 6px; position: relative; margin-top: 20px; }
+        pre { margin: 0; white-space: pre-wrap; font-family: 'Consolas', 'Courier New', monospace; font-size: 14px; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; background: #444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .copy-btn:hover { background: #666; }
+        .lang-labels { display: flex; justify-content: space-between; font-size: 0.85em; color: #666; margin-top: 10px; }
+    </style>
 </head>
 <body>
 
- 
-		
-  <div class="container">
-    <h1>How To Forward DNS (TCP & UDP) to Mikrotik DNS !!!</h1>
-    <p>To be continue</p>
- 
-  </div>
+<div class="card">
+    <h2 style="margin-top:0;">📡 MikroTik NAT DNS Redirector</h2>
+    
+    <div class="input-group">
+        <label>Destination DNS IP (EN) / গন্তব্য ডিএনএস আইপি (BN)</label>
+        <input type="text" id="targetIp" value="103.41.213.2" oninput="generateNat()">
+    </div>
 
-       <div class="container">
-   <a href="V7 Script.txt" class="button">Clink Here, DNS Forward Script ( V-7 )</a>
-   </div>
+    <div class="terminal">
+        <button class="copy-btn" onclick="copyText()">Copy</button>
+        <pre id="output"></pre>
+    </div>
 
-    <div class="container">
-   <a href="V6 Script.txt" class="button">Clink Here, DNS Forward Script ( V-6 )</a>
-   </div>
-   
-   
- <div class="grt code grt pregrt kbd ">
-	<code>
-	<span class="normaluserprompt"> </span> ✅✅✅✅ V6 Script:✅✅✅✅<br>
-	------------------------------------------------------<br>
-<span  class="normaluserprompt"> </span>/ip firewall nat<br>
-<span class="normaluserprompt"></span>add action=dst-nat chain=dstnat dst-port=53 protocol=tcp to-addresses=103.41.213.2 to-ports=53 <br>
-<span class="normaluserprompt"></span>add action=dst-nat chain=dstnat dst-port=53 protocol=udp to-addresses=103.41.213.2 to-ports=53 <br>
-</code>
-
-  <div class="grt code grt pregrt kbd ">
-	<code>
-	<span class="normaluserprompt"> </span> ✅✅✅✅ V7 Script:✅✅✅✅<br>
-	------------------------------------------------------<br>
-<span  class="normaluserprompt"> </span>/ip/firewall/nat/<br>
-<span class="normaluserprompt"></span>add action=dst-nat chain=dstnat dst-port=53 protocol=tcp to-addresses=103.41.213.2 to-ports=53 <br>
-<span class="normaluserprompt"></span>add action=dst-nat chain=dstnat dst-port=53 protocol=udp to-addresses=103.41.213.2 to-ports=53 <br>
-</code>
-
- <div class="container">
-   <h1> DNS Forward Script ( TCP ) </h1>
-<img src="img\1.png" alt="DNS" style="width:100%;">
-<img src="img\2.png" alt="DNS" style="width:100%;">
+    <div class="lang-labels">
+        <span><strong>English:</strong> Only /ip/firewall/nat/ rules.</span>
+        <span><strong>বাংলা:</strong> শুধুমাত্র NAT কনফিগারেশন।</span>
+    </div>
 </div>
 
- <div class="container">
-   <h1> DNS Forward Script  ( UDP ) </h1>
-<img src="img\3.png" alt="DNS" style="width:100%;">
-<img src="img\2.png" alt="DNS" style="width:100%;">
-</div>
+<script>
+    function generateNat() {
+        const ip = document.getElementById('targetIp').value || '103.41.213.2';
+        const code = `/ip/firewall/nat/
+add action=dst-nat chain=dstnat dst-port=53 protocol=tcp to-addresses=${ip} to-ports=53 comment="DNS_Forward_TCP"
+add action=dst-nat chain=dstnat dst-port=53 protocol=udp to-addresses=${ip} to-ports=53 comment="DNS_Forward_UDP"`;
+
+        document.getElementById('output').innerText = code;
+    }
+
+    function copyText() {
+        const text = document.getElementById('output').innerText;
+        navigator.clipboard.writeText(text);
+        alert("Copied! / কপি করা হয়েছে!");
+    }
+
+    // Run on load
+    generateNat();
+</script>
 
 </body>
 </html>
