@@ -14,14 +14,15 @@ IF NOT EXIST ".git" (
     git branch -M main
 )
 
-echo Pulling latest changes from remote...
-git pull origin main
-
+REM Stage and commit changes first
 git add .
-
 set CURRDATE=%date% %time%
 git commit -m "Auto commit on %CURRDATE% with Sohag1192 updates"
 
+REM Pull latest changes safely
+git pull origin main --rebase
+
+REM Push to correct branch
 git push origin main
 
 echo.
