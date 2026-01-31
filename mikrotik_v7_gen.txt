@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MikroTik ISP Generator (v7 - Full Interfaces)</title>
+    <style>
+        :root { --primary: #0f172a; --accent: #3b82f6; --bg: #f1f5f9; --panel: #ffffff; --border: #cbd5e1; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: #334155; padding: 20px; line-height: 1.5; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        h1 { color: var(--primary); margin-bottom: 20px; border-bottom: 3px solid var(--accent); display: inline-block; padding-bottom: 5px; }
+        h2 { font-size: 1.1rem; margin-top: 0; color: var(--accent); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px;}
+        
+        /* Layout */
+        .grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
+        @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+        
+        /* Cards */
+        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        
+        /* Inputs */
+        label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #64748b; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 12px; font-family: monospace; font-size: 0.9rem; box-sizing: border-box; }
+        input:focus { border-color: var(--accent); outline: none; ring: 2px var(--accent); }
+
+        /* Output */
+        textarea { width: 100%; height: 700px; background: #1e293b; color: #e2e8f0; font-family: 'Consolas', monospace; font-size: 13px; padding: 15px; border-radius: 6px; border: none; resize: vertical; }
+        
+        /* Button */
+        button.btn-gen { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1rem; transition: transform 0.1s; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5); }
+        button.btn-gen:hover { background: #2563eb; transform: translateY(-1px); }
+        button.btn-gen:active { transform: translateY(1px); }
+
+        /* Package Grid */
+        .pkg-grid { display: grid; grid-template-columns: 30px 2fr 1fr 1fr 1fr; gap: 8px; align-items: center; margin-bottom: 5px; font-size: 0.85rem; }
+        .pkg-header { font-weight: bold; background: #f8fafc; padding: 8px; border-bottom: 2px solid var(--border); }
+        .interface-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>MikroTik v7 Generator (Multi-Interface)</h1>
+    
+    <div class="grid">
+        <div class="sidebar">
+            
+            <div class="card">
+                <h2>🌐 Network Setup</h2>
+                <label>Starting Pool Network</label>
+                <input type="text" id="startIP" value="172.21.96.0">
+                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: -8px; margin-bottom: 10px;">Autogenerates 10 subnets (/20)</div>
+
+                <label>DNS Servers</label>
+                <input type="text" id="dns" value="8.8.8.8,8.8.4.4">
+            </div>
+
+            <div class="card">
+                <h2>🔌 Interface Names</h2>
+                <div class="interface-group">
+                    <div>
+                        <label>BDIX Interface</label>
+                        <input type="text" id="intBDIX" value="1.1-2641-BDIX">
+                    </div>
+                    <div>
+                        <label>GGC Interface</label>
+                        <input type="text" id="intGGC" value="1.3-2643-GGC">
+                    </div>
+                    <div>
+                        <label>Facebook Interface</label>
+                        <input type="text" id="intFB" value="1.4-2644-FB">
+                    </div>
+                    <div>
+                        <label>CDN Interface</label>
+                        <input type="text" id="intCDN" value="1.5-2645-CDN">
+                    </div>
+                    <div>
+                        <label>FTP Interface</label>
+                        <input type="text" id="intFTP" value="1.7-2647-FTP">
+                    </div>
+                    <div>
+                        <label>TikTok Interface</label>
+                        <input type="text" id="intTIK" value="1.8-2648-TIK">
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-gen" onclick="generateScript()">⚡ Generate Full Script</button>
+        </div>
+
+        <div class="main-content">
+            
+            <div class="card">
+                <h2>📦 Packages (P1 - P10)</h2>
+                <div class="pkg-grid pkg-header">
+                    <div>#</div>
+                    <div>Pkg Name</div>
+                    <div>Rate (M)</div>
+                    <div>Price</div>
+                    <div>Boost (M)</div>
+                </div>
+                <div id="packagesContainer"></div>
+            </div>
+
+            <div class="card">
+                <h2>📜 Script Output</h2>
+                <textarea id="output" readonly onclick="this.select()">Click "Generate Full Script" to create the code...</textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Default Data
+    const defaults = [
+        { name: "Bronze", rate: 20, price: 500, boost: 30 },
+        { name: "Silver", rate: 25, price: 600, boost: 40 },
+        { name: "Gold", rate: 35, price: 700, boost: 50 },
+        { name: "Platinum", rate: 45, price: 800, boost: 60 },
+        { name: "Diamond", rate: 55, price: 1000, boost: 70 },
+        { name: "Sapphire", rate: 65, price: 1200, boost: 80 },
+        { name: "Ruby", rate: 75, price: 1400, boost: 90 },
+        { name: "Emerald", rate: 85, price: 1600, boost: 90 },
+        { name: "Pearl", rate: 95, price: 1800, boost: 100 },
+        { name: "Onyx", rate: 100, price: 2000, boost: 100 }
+    ];
+
+    // Build Package Rows
+    const container = document.getElementById('packagesContainer');
+    defaults.forEach((pkg, index) => {
+        const i = index + 1;
+        container.innerHTML += `
+            <div class="pkg-grid">
+                <div style="font-weight:bold; color:#cbd5e1;">${i}</div>
+                <input type="text" id="name${i}" value="${pkg.name}">
+                <input type="number" id="rate${i}" value="${pkg.rate}">
+                <input type="number" id="price${i}" value="${pkg.price}">
+                <input type="number" id="boost${i}" value="${pkg.boost}">
+            </div>
+        `;
+    });
+
+    // IP Calc Logic
+    function calculateSubnets(startIP) {
+        let parts = startIP.split('.').map(Number);
+        if (parts.length !== 4) return null;
+        
+        let subnets = [];
+        let octet3 = parts[2];
+
+        for (let i = 0; i < 10; i++) {
+            let net = `${parts[0]}.${parts[1]}.${octet3}.0`;
+            let gateway = `${parts[0]}.${parts[1]}.${octet3}.1`;
+            let range = `${parts[0]}.${parts[1]}.${octet3}.2-${parts[0]}.${parts[1]}.${octet3 + 15}.254`;
+            
+            subnets.push({
+                cidr: `${net}/20`,
+                gateway: gateway,
+                range: range,
+                poolName: `pool_P${i+1}_${document.getElementById(`name${i+1}`).value.toLowerCase().replace(/\s/g,'_')}`
+            });
+
+            octet3 += 16; 
+        }
+        return subnets;
+    }
+
+    function generateScript() {
+        const startIP = document.getElementById('startIP').value.trim();
+        const dns = document.getElementById('dns').value.trim();
+        
+        // Interfaces
+        const interfaces = [
+            { id: 'intBDIX', prefix: 'BDIX' },
+            { id: 'intGGC',  prefix: 'GGC' },
+            { id: 'intFB',   prefix: 'FNA' },
+            { id: 'intCDN',  prefix: 'CDN' },
+            { id: 'intFTP',  prefix: 'FTP' },
+            { id: 'intTIK',  prefix: 'TIK' }
+        ];
+
+        const subnets = calculateSubnets(startIP);
+        if (!subnets) { alert("Check Starting IP format"); return; }
+
+        let s = `# ===================================================================\n`;
+        s += `# MIKROTIK v7 GENERATOR - ${new Date().toLocaleString()}\n`;
+        s += `# ===================================================================\n\n`;
+
+        // 1. POOLS
+        s += `# --- 1. IP POOLS ---\n/ip pool\n`;
+        subnets.forEach(net => s += `add name="${net.poolName}" ranges=${net.range}\n`);
+        s += `\n`;
+
+        // 2. LOGGING
+        s += `# --- 2. LOGGING ---\n`;
+        s += `:global pppOnUp ":local remoteAddr \\$\\"remote-address\\"; :local callerId \\$\\"caller-id\\"; :local sessId [/ppp active get [find name=\\$user] session-id]; :log info \\"PPPLOG \\$user \\$callerId \\$remoteAddr \\$sessId\\""\n\n`;
+
+        // 3. PROFILES
+        s += `# --- 3. PPP PROFILES ---\n/ppp profile\n`;
+        subnets.forEach((net, i) => {
+            const idx = i+1;
+            const name = document.getElementById(`name${idx}`).value;
+            const rate = document.getElementById(`rate${idx}`).value;
+            const price = document.getElementById(`price${idx}`).value;
+            s += `add name="P${idx}_${name}_${rate}Mbps" local-address=${net.gateway} remote-address="${net.poolName}" \\\n`;
+            s += `    only-one=yes on-up=$pppOnUp dns-server=${dns} rate-limit=${rate}M/${rate}M comment="Price: ${price} Tk - ${rate} Mbps"\n\n`;
+        });
+
+        // 4. FIREWALL
+        s += `# --- 4. FIREWALL ---\n/ip firewall nat\n`;
+        s += `add chain=srcnat action=masquerade src-address=${startIP}/16 comment="NAT for All Packages"\n\n`;
+        s += `/ip firewall mangle\n`;
+        s += `add chain=forward action=add-src-to-address-list address-list=2_RT_BLOCK address-list-timeout=30s src-address=${startIP}/16 in-interface=all-ppp connection-state=established ttl=1-61 comment="Detect Shared Connection"\n\n`;
+        s += `/ip firewall raw\n`;
+        s += `add chain=prerouting action=drop src-address-list=2_RT_BLOCK ttl=1-62 comment="Drop Shared Connection"\n\n`;
+
+        // 5. QUEUE TYPES
+        s += `# --- 5. QUEUE TYPES (PCQ) ---\n/queue type\n`;
+        
+        let rates = new Set();
+        for(let i=1; i<=10; i++) {
+            rates.add(parseInt(document.getElementById(`rate${i}`).value));
+            rates.add(parseInt(document.getElementById(`boost${i}`).value));
+        }
+        let sortedRates = Array.from(rates).sort((a,b)=>a-b);
+
+        // General Types
+        sortedRates.forEach(r => {
+            s += `add kind=pcq name="pcq_down_${r}M" pcq-rate=${r}M pcq-classifier=dst-address\n`;
+            s += `add kind=pcq name="pcq_up_${r}M" pcq-rate=${r}M pcq-classifier=src-address\n`;
+        });
+        
+        // Unified Boost Types
+        sortedRates.forEach(r => {
+            s += `add kind=pcq name="pcq_boost_down_${r}M" pcq-rate=${r}M pcq-classifier=dst-address\n`;
+            s += `add kind=pcq name="pcq_boost_up_${r}M" pcq-rate=${r}M pcq-classifier=src-address\n`;
+        });
+        s += `\n`;
+
+        // 6. SIMPLE QUEUES (INTERFACES)
+        s += `# --- 6. SIMPLE QUEUES (SPEED BOOSTS) ---\n/queue simple\n`;
+        
+        interfaces.forEach(iface => {
+            const intName = document.getElementById(iface.id).value.trim();
+            if(!intName) return;
+
+            s += `# --- ${iface.prefix} (${intName}) ---\n`;
+            
+            subnets.forEach((net, i) => {
+                const idx = i+1;
+                const boost = document.getElementById(`boost${idx}`).value;
+                s += `add name="${iface.prefix}_P${idx}" target=${net.cidr} dst="${intName}" queue=pcq_boost_up_${boost}M/pcq_boost_down_${boost}M place-before=0\n`;
+            });
+            s += `\n`;
+        });
+
+        // 7. MAIN QUEUES
+        s += `# --- 7. MAIN INTERNET QUEUES ---\n`;
+        subnets.forEach((net, i) => {
+            const idx = i+1;
+            const name = document.getElementById(`name${idx}`).value;
+            const rate = document.getElementById(`rate${idx}`).value;
+            s += `add name="P${idx}_${name}_Block" target=${net.cidr} queue=pcq_up_${rate}M/pcq_down_${rate}M comment="${rate} Mbps per user"\n`;
+        });
+
+        document.getElementById('output').value = s;
+    }
+</script>
+
+</body>
+</html>
