@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MikroTik Port Forward Generator | Sohag1192</title>
+    <meta name="description" content="Generate MikroTik Port Forwarding (dst-nat) rules. Map Public Ports to Local IPs easily.">
+    <meta name="author" content="Sohag1192">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌐</text></svg>">
+
+    <style>
+        :root { --primary: #8e44ad; --bg: #f3f4f6; --text: #333; --code-bg: #1e1e1e; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
+        
+        .card { 
+            background: white; width: 100%; max-width: 1000px; padding: 30px; 
+            border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            border-top: 5px solid var(--primary); 
+        }
+
+        .header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .header h1 { margin: 0; color: var(--primary); }
+        .header p { margin: 5px 0 0; color: #666; }
+
+        /* Input Grid */
+        .input-row { 
+            display: grid; 
+            grid-template-columns: 1.5fr 1fr 1fr 1.5fr 1fr 1fr auto; 
+            gap: 10px; 
+            align-items: end; 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 8px; 
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        input:focus { border-color: var(--primary); outline: none; }
+
+        .btn-add { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-add:hover { background: #219150; }
+
+        /* Table */
+        .table-wrap { overflow-x: auto; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; font-size: 14px; }
+        th { background: var(--primary); color: white; padding: 10px; text-align: left; }
+        td { border-bottom: 1px solid #eee; padding: 8px; }
+        tr:nth-child(even) { background: #fcfcfc; }
+
+        .btn-del { background: #c0392b; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+
+        /* Output */
+        .output-area { position: relative; }
+        pre { background: var(--code-bg); color: #a29bfe; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: 'Consolas', monospace; min-height: 100px; }
+        
+        .btn-copy { position: absolute; top: 10px; right: 10px; background: #555; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; }
+        .btn-copy:hover { background: #777; }
+
+        .footer { text-align: center; margin-top: 20px; font-size: 13px; color: #888; }
+        .footer a { color: var(--primary); text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h1>🌐 MikroTik Port Forwarding</h1>
+        <p>Generate <code>dst-nat</code> rules to expose internal servers</p>
+    </div>
+
+    <div class="input-row">
+        <div>
+            <label>Public IP (Dst-Address)</label>
+            <input type="text" id="pubIp" value="103.xxx.xxx.2xx6" placeholder="WAN IP">
+        </div>
+        <div>
+            <label>Protocol</label>
+            <select id="proto">
+                <option value="tcp">tcp</option>
+                <option value="udp">udp</option>
+            </select>
+        </div>
+        <div>
+            <label>Public Port</label>
+            <input type="text" id="pubPort" placeholder="e.g. 90">
+        </div>
+        <div>
+            <label>Local IP (To-Addr)</label>
+            <input type="text" id="locIp" placeholder="e.g. 192.168.6.110">
+        </div>
+        <div>
+            <label>Local Port</label>
+            <input type="text" id="locPort" placeholder="e.g. 80">
+        </div>
+        <div>
+            <label>Comment</label>
+            <input type="text" id="comment" placeholder="Web-Server">
+        </div>
+        <div>
+            <button class="btn-add" onclick="addRule()">+ Add</button>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Public IP</th>
+                    <th>Proto</th>
+                    <th>Dst Port</th>
+                    <th>To Address</th>
+                    <th>To Port</th>
+                    <th>Comment</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="listBody">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="output-area">
+        <button class="btn-copy" onclick="copyCode()">Copy Script</button>
+        <pre id="output"># Rules will appear here...</pre>
+    </div>
+
+    <div class="footer">
+        Developed by <a href="https://github.com/sohag1192/" target="_blank">Sohag1192</a>
+    </div>
+</div>
+
+<script>
+    let rules = [];
+
+    // Helper: Add on Enter key
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') addRule();
+    });
+
+    function addRule() {
+        const pubIp = document.getElementById('pubIp').value.trim();
+        const proto = document.getElementById('proto').value;
+        const pubPort = document.getElementById('pubPort').value.trim();
+        const locIp = document.getElementById('locIp').value.trim();
+        const locPort = document.getElementById('locPort').value.trim(); // Optional, defaults to pubPort if empty
+        const comment = document.getElementById('comment').value.trim();
+
+        if (!pubIp || !pubPort || !locIp) {
+            alert("Public IP, Public Port, and Local IP are required!");
+            return;
+        }
+
+        // Logic: If Local Port is empty, use Public Port
+        const finalLocPort = locPort || pubPort;
+
+        rules.push({ pubIp, proto, pubPort, locIp, locPort: finalLocPort, comment });
+        render();
+
+        // Clear only specific fields for faster entry
+        document.getElementById('pubPort').value = '';
+        document.getElementById('locIp').value = '';
+        document.getElementById('locPort').value = '';
+        document.getElementById('comment').value = '';
+        document.getElementById('pubPort').focus();
+    }
+
+    function removeRule(index) {
+        rules.splice(index, 1);
+        render();
+    }
+
+    function render() {
+        const tbody = document.getElementById('listBody');
+        const output = document.getElementById('output');
+
+        // Render Table
+        if (rules.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#999;">No rules added yet.</td></tr>';
+            output.textContent = "# Add rules above to generate script...";
+        } else {
+            tbody.innerHTML = rules.map((r, i) => `
+                <tr>
+                    <td>${r.pubIp}</td>
+                    <td>${r.proto}</td>
+                    <td><b>${r.pubPort}</b></td>
+                    <td>${r.locIp}</td>
+                    <td>${r.locPort}</td>
+                    <td>${r.comment}</td>
+                    <td><button class="btn-del" onclick="removeRule(${i})">X</button></td>
+                </tr>
+            `).join('');
+
+            // Generate Script
+            let script = `/ip firewall nat\n`;
+            script += rules.map(r => {
+                let line = `add action=dst-nat chain=dstnat dst-address=${r.pubIp} dst-port=${r.pubPort} protocol=${r.proto} to-addresses=${r.locIp} to-ports=${r.locPort}`;
+                if (r.comment) line += ` comment="${r.comment}"`;
+                return line;
+            }).join('\n');
+            
+            output.textContent = script;
+        }
+    }
+
+    function copyCode() {
+        const text = document.getElementById('output').textContent;
+        navigator.clipboard.writeText(text);
+        alert("Copied!");
+    }
+
+    // Default init
+    render();
+</script>
+
+</body>
+</html>
