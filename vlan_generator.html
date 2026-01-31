@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MikroTik VLAN Generator | Sohag1192</title>
+    <meta name="description" content="Generate MikroTik VLAN interface scripts. Support for multiple parent interfaces (Trunks) and bulk creation.">
+    <meta name="author" content="Sohag1192">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖧</text></svg>">
+
+    <style>
+        :root { --primary: #0984e3; --bg: #f5f6fa; --text: #2d3436; --code-bg: #2d3436; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
+        
+        .card { 
+            background: white; width: 100%; max-width: 1100px; padding: 30px; 
+            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            border-top: 6px solid var(--primary); 
+        }
+
+        .header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .header h1 { margin: 0; color: var(--primary); font-size: 24px; }
+
+        /* Input Grid */
+        .input-row { 
+            display: grid; 
+            grid-template-columns: 1.5fr 80px 2fr 1.5fr auto; 
+            gap: 10px; 
+            align-items: end; 
+            margin-bottom: 20px;
+            background: #f1f2f6; padding: 20px; border-radius: 8px; border: 1px solid #dcdde1;
+        }
+
+        .input-group label { display: block; font-weight: bold; font-size: 12px; margin-bottom: 5px; color: #636e72; }
+        .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid #b2bec3; border-radius: 5px; box-sizing: border-box; }
+        .input-group input:focus { border-color: var(--primary); outline: none; }
+
+        .btn-add { background: #00b894; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
+        .btn-add:hover { background: #00a884; }
+
+        /* Table */
+        .table-container { overflow-x: auto; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; font-size: 14px; }
+        th { background: var(--primary); color: white; padding: 12px; text-align: left; }
+        td { border-bottom: 1px solid #eee; padding: 8px; }
+        tr:nth-child(even) { background: #f8f9fa; }
+
+        .btn-del { background: #d63031; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+
+        /* Output */
+        .output-area { position: relative; }
+        pre { background: var(--code-bg); color: #81ecec; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: 'Consolas', monospace; min-height: 150px; font-size: 13px; line-height: 1.5; }
+        
+        .copy-btn { position: absolute; top: 15px; right: 15px; background: #636e72; color: white; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; }
+        
+        .footer { text-align: center; margin-top: 20px; font-size: 13px; color: #888; border-top: 1px solid #eee; padding-top: 20px; }
+        .footer a { color: var(--primary); text-decoration: none; font-weight: bold; }
+        
+        .toggle-section { margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h1>🖧 MikroTik VLAN Generator</h1>
+        <p>Generate <code>/interface vlan</code> rules for multiple trunks</p>
+    </div>
+
+    <div class="input-row">
+        <div class="input-group">
+            <label>Parent Interface (Default)</label>
+            <input type="text" id="defParent" value="ether1">
+        </div>
+        <div class="input-group">
+            <label>VLAN ID</label>
+            <input type="number" id="vid" placeholder="10">
+        </div>
+        <div class="input-group">
+            <label>VLAN Name</label>
+            <input type="text" id="vname" placeholder="Sales">
+        </div>
+        <div class="input-group">
+            <label>Parent (Optional Override)</label>
+            <input type="text" id="custParent" placeholder="Leave empty for default">
+        </div>
+        <div class="input-group">
+            <button class="btn-add" onclick="addVlan()">+ Add</button>
+        </div>
+    </div>
+
+    <div class="toggle-section">
+        <input type="checkbox" id="addIP" onchange="render()"> 
+        <label for="addIP">Generate IP Address & Pools (Advanced)</label>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th width="10%">ID</th>
+                    <th width="35%">Name</th>
+                    <th width="35%">Parent Interface</th>
+                    <th width="10%">Action</th>
+                </tr>
+            </thead>
+            <tbody id="listBody">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="output-area">
+        <button class="copy-btn" onclick="copyCode()">Copy Script</button>
+        <pre id="output"># Add VLANs above to generate script...</pre>
+    </div>
+
+    <div class="footer">
+        Developed by <a href="https://github.com/sohag1192/" target="_blank">Sohag1192</a>
+    </div>
+</div>
+
+<script>
+    let vlans = [];
+
+    // Helper: Add on Enter
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') addVlan();
+    });
+
+    function addVlan() {
+        const defParent = document.getElementById('defParent').value.trim();
+        const vid = document.getElementById('vid').value.trim();
+        let vname = document.getElementById('vname').value.trim();
+        const custParent = document.getElementById('custParent').value.trim();
+
+        if (!vid) {
+            alert("VLAN ID is required!");
+            return;
+        }
+
+        // Determine Final Parent
+        const finalParent = custParent || defParent;
+        if(!finalParent) {
+            alert("Please set a Default Parent Interface or specific Override.");
+            return;
+        }
+
+        // Auto-generate Name if empty
+        if (!vname) vname = `vlan-${vid}`;
+
+        vlans.push({ vid, vname, parent: finalParent });
+        render();
+
+        // Clear inputs
+        document.getElementById('vid').value = '';
+        document.getElementById('vname').value = '';
+        document.getElementById('custParent').value = '';
+        document.getElementById('vid').focus();
+    }
+
+    function removeVlan(index) {
+        vlans.splice(index, 1);
+        render();
+    }
+
+    function render() {
+        const tbody = document.getElementById('listBody');
+        const output = document.getElementById('output');
+        const showIP = document.getElementById('addIP').checked;
+
+        // Table
+        if (vlans.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#888;">No VLANs added yet.</td></tr>';
+            output.textContent = "# Add VLANs above to generate script...";
+        } else {
+            tbody.innerHTML = vlans.map((v, i) => `
+                <tr>
+                    <td><b>${v.vid}</b></td>
+                    <td>${v.vname}</td>
+                    <td>${v.parent}</td>
+                    <td><button class="btn-del" onclick="removeVlan(${i})">Remove</button></td>
+                </tr>
+            `).join('');
+
+            // Script Gen
+            let script = `/interface vlan\n`;
+            
+            // 1. Interface Creation
+            vlans.forEach(v => {
+                script += `add interface=${v.parent} name=${v.vname} vlan-id=${v.vid}\n`;
+            });
+
+            // 2. Optional IP/Pool Logic (Dummy IPs for example)
+            if(showIP) {
+                script += `\n# --- IP Addresses (Example: 192.168.ID.1) ---\n/ip address\n`;
+                vlans.forEach(v => {
+                    script += `add address=192.168.${v.vid % 255}.1/24 interface=${v.vname}\n`;
+                });
+                
+                script += `\n# --- IP Pools ---\n/ip pool\n`;
+                vlans.forEach(v => {
+                    script += `add name=pool-${v.vname} ranges=192.168.${v.vid % 255}.10-192.168.${v.vid % 255}.254\n`;
+                });
+            }
+
+            output.textContent = script;
+        }
+    }
+
+    function copyCode() {
+        const text = document.getElementById('output').textContent;
+        navigator.clipboard.writeText(text);
+        alert("Copied!");
+    }
+</script>
+
+</body>
+</html>
