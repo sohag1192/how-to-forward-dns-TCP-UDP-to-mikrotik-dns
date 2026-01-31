@@ -15,7 +15,7 @@ IF NOT EXIST ".git" (
 )
 
 echo Pulling latest changes from remote...
-git pull origin main --rebase
+git pull origin main
 
 git add .
 
