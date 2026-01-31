@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MikroTik Script Generators | Automation Tools by Sohag1192</title>
+    <meta name="description" content="Free online tools to generate MikroTik RouterOS scripts: DNS Forwarding, NAT, Mangle/TTL, and ISP Configuration. Supports v6 & v7.">
+    <meta name="keywords" content="MikroTik, RouterOS, Script Generator, ISP Config, UFW, Firewall, Automation, Sohag1192">
+    <meta name="author" content="Sohag1192">
+    
+    <meta property="og:title" content="MikroTik Script Generators">
+    <meta property="og:description" content="The ultimate collection of MikroTik automation tools.">
+    <meta property="og:url" content="https://github.com/sohag1192/MikroTik-Script-Generators">
+    <meta property="og:type" content="website">
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --bg: #f8f9fa;
+            --text: #333;
+            --card-bg: #ffffff;
+            --hover-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        .hero h1 { margin: 0; font-size: 2.5rem; font-weight: 700; }
+        .hero p { margin: 10px 0 20px; font-size: 1.2rem; opacity: 0.9; }
+        .hero a {
+            color: white;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+        .hero a:hover { background: rgba(255,255,255,0.4); }
+
+        /* Container */
+        .container {
+            max-width: 1100px;
+            margin: -40px auto 40px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        /* Tool Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            color: inherit;
+            border-top: 5px solid transparent;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        /* Card Colors */
+        .card.dns { border-top-color: #e67e22; }
+        .card.nat { border-top-color: #27ae60; }
+        .card.mangle { border-top-color: #8e44ad; }
+        .card.isp { border-top-color: #e74c3c; }
+
+        .icon { font-size: 3rem; margin-bottom: 15px; }
+        .card h2 { margin: 0 0 10px; font-size: 1.5rem; color: var(--primary); }
+        .card p { font-size: 0.95rem; color: #666; margin-bottom: 20px; flex-grow: 1; }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #f1f2f6;
+            color: var(--primary);
+            border-radius: 6px;
+            font-weight: 600;
+            text-align: center;
+            transition: 0.2s;
+        }
+        .card:hover .btn { background: var(--primary); color: white; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px;
+            color: #777;
+            border-top: 1px solid #eee;
+        }
+        .footer a { color: var(--accent); text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <h1>⚡ MikroTik Script Generators</h1>
+        <p>Easy Config Tools for RouterOS v6 & v7</p>
+        <a href="https://github.com/sohag1192/MikroTik-Script-Generators" target="_blank">View on GitHub ↗</a>
+    </div>
+
+    <div class="container">
+
+        <a href="dns.html" class="card dns">
+            <div>
+                <div class="icon">🛰️</div>
+                <h2>DNS Forwarding</h2>
+                <p>Redirect TCP/UDP DNS requests to your specific server or local cache. Essential for controlling network traffic.</p>
+            </div>
+            <span class="btn">Open Generator &rarr;</span>
+        </a>
+
+        <a href="nat.html" class="card nat">
+            <div>
+                <div class="icon">🔥</div>
+                <h2>NAT & Masquerade</h2>
+                <p>Bulk generate <code>src-nat</code> and <code>masquerade</code> rules for specific interfaces. Great for multi-WAN setups.</p>
+            </div>
+            <span class="btn">Open Generator &rarr;</span>
+        </a>
+
+        <a href="mangle.html" class="card mangle">
+            <div>
+                <div class="icon">🛡️</div>
+                <h2>Mangle & TTL</h2>
+                <p>Change TTL values to hide hops and detect secondary routers (Anti-Tethering) automatically.</p>
+            </div>
+            <span class="btn">Open Generator &rarr;</span>
+        </a>
+
+        <a href="isp.html" class="card isp">
+            <div>
+                <div class="icon">🏢</div>
+                <h2>ISP Mega Config</h2>
+                <p>Full Setup: IP Pools, Profiles, Queues, and Split Traffic for BDIX, GGC, Facebook, and CDN.</p>
+            </div>
+            <span class="btn">Open Generator &rarr;</span>
+        </a>
+
+    </div>
+
+    <div class="footer">
+        <p>&copy; <script>document.write(new Date().getFullYear())</script> MikroTik Tools. Open Source.</p>
+        <p>Developed by <a href="https://github.com/sohag1192/" target="_blank">Sohag1192</a></p>
+    </div>
+
+</body>
+</html>
