@@ -1,6 +1,6 @@
 
 
-### 📘 Repository: [how-to-forward-dns-TCP-UDP-to-mikrotik-dns](https://github.com/sohag1192/how-to-forward-dns-TCP-UDP-to-mikrotik-dns)  
+### 📘 Repository: [how-to-forward-dns-TCP-UDP-to-mikrotik-dns](https://github.com/sohag1192/how-to-forward-dns-TCP-UDP-to-mikrotik-dns)   ![Badge](https://hitscounter.dev/api/hit?url=https%3A%2F%2Fgithub.com%2Fsohag1192%2FMikroTik-Script-Generators&label=&icon=github&color=%23198754&message=&style=flat&tz=UTC)
 **Author:** Md. Sohag Rana  
 **Live Demo:** [sohag1192.github.io/how-to-forward-dns-TCP-UDP-to-mikrotik-dns](https://sohag1192.github.io/how-to-forward-dns-TCP-UDP-to-mikrotik-dns)
 
