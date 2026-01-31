@@ -3,30 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MikroTik /ip/firewall/nat/ Generator</title>
+    <title>MikroTik NAT DNS Generator v6/v7</title>
     <style>
-        :root { --mikrotik-red: #d32f2f; --dark-bg: #121212; --accent: #00e676; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; width: 100%; max-width: 800px; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-top: 5px solid var(--mikrotik-red); }
-        .input-group { margin-bottom: 20px; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; }
-        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; box-sizing: border-box; }
-        input:focus { border-color: var(--mikrotik-red); outline: none; box-shadow: 0 0 5px rgba(211, 47, 47, 0.2); }
-        .terminal { background: var(--dark-bg); color: var(--accent); padding: 20px; border-radius: 6px; position: relative; margin-top: 20px; }
-        pre { margin: 0; white-space: pre-wrap; font-family: 'Consolas', 'Courier New', monospace; font-size: 14px; }
-        .copy-btn { position: absolute; top: 10px; right: 10px; background: #444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
-        .copy-btn:hover { background: #666; }
-        .lang-labels { display: flex; justify-content: space-between; font-size: 0.85em; color: #666; margin-top: 10px; }
+        :root { --ros-blue: #0054a6; --ros-v7: #6c5ce7; --dark: #1e272e; }
+        body { font-family: 'Segoe UI', sans-serif; background: #eceff1; display: flex; justify-content: center; padding: 20px; }
+        .container { background: white; width: 100%; max-width: 850px; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .ver-toggle { display: flex; gap: 10px; margin-bottom: 20px; }
+        .ver-btn { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center; transition: 0.3s; }
+        .ver-btn.active { border-color: var(--ros-blue); background: var(--ros-blue); color: white; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
+        .terminal { background: var(--dark); color: #00d2d3; padding: 20px; border-radius: 8px; position: relative; margin-top: 15px; }
+        pre { margin: 0; white-space: pre-wrap; font-family: 'Consolas', monospace; font-size: 14px; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; background: #333; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .copy-btn:hover { background: #444; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2 style="margin-top:0;">📡 MikroTik NAT DNS Redirector</h2>
+<div class="container">
+    <h2>📡 MikroTik /ip/firewall/nat/ Generator</h2>
     
+    <div class="ver-toggle">
+        <div id="btnV6" class="ver-btn active" onclick="setVersion('v6')">RouterOS v6</div>
+        <div id="btnV7" class="ver-btn" onclick="setVersion('v7')">RouterOS v7</div>
+    </div>
+
     <div class="input-group">
-        <label>Destination DNS IP (EN) / গন্তব্য ডিএনএস আইপি (BN)</label>
-        <input type="text" id="targetIp" value="103.41.213.2" oninput="generateNat()">
+        <label>Target DNS Server IP / গন্তব্য ডিএনএস আইপি</label>
+        <input type="text" id="targetIp" value="8.8.8.8" oninput="generate()">
     </div>
 
     <div class="terminal">
@@ -34,30 +40,47 @@
         <pre id="output"></pre>
     </div>
 
-    <div class="lang-labels">
-        <span><strong>English:</strong> Only /ip/firewall/nat/ rules.</span>
-        <span><strong>বাংলা:</strong> শুধুমাত্র NAT কনফিগারেশন।</span>
-    </div>
+    <p style="font-size: 0.85em; color: #666; margin-top: 15px;">
+        <strong>EN:</strong> v7 includes optimization for newer Kernel stacks. <br>
+        <strong>BN:</strong> v7-এ নতুন কার্নেল স্ট্যাকের জন্য অপ্টিমাইজেশন অন্তর্ভুক্ত করা হয়েছে।
+    </p>
 </div>
 
 <script>
-    function generateNat() {
-        const ip = document.getElementById('targetIp').value || '103.41.213.2';
-        const code = `/ip/firewall/nat/
-add action=dst-nat chain=dstnat dst-port=53 protocol=tcp to-addresses=${ip} to-ports=53 comment="DNS_Forward_TCP"
-add action=dst-nat chain=dstnat dst-port=53 protocol=udp to-addresses=${ip} to-ports=53 comment="DNS_Forward_UDP"`;
+    let currentVer = 'v6';
+
+    function setVersion(v) {
+        currentVer = v;
+        document.getElementById('btnV6').classList.toggle('active', v === 'v6');
+        document.getElementById('btnV7').classList.toggle('active', v === 'v7');
+        generate();
+    }
+
+    function generate() {
+        const ip = document.getElementById('targetIp').value || '8.8.8.8';
+        let code = "";
+
+        if(currentVer === 'v6') {
+            code = `# RouterOS v6 Configuration\n/ip firewall nat\n`;
+            code += `add action=dst-nat chain=dstnat dst-port=53 protocol=tcp to-addresses=${ip} to-ports=53 comment="v6_DNS_TCP"\n`;
+            code += `add action=dst-nat chain=dstnat dst-port=53 protocol=udp to-addresses=${ip} to-ports=53 comment="v6_DNS_UDP"`;
+        } else {
+            code = `# RouterOS v7 Configuration (Optimized)\n/ip firewall nat\n`;
+            code += `add action=dst-nat chain=dstnat dst-port=53 protocol=tcp to-addresses=${ip} to-ports=53 comment="v7_DNS_TCP"\\
+    connection-type="" ipsec-policy=out,none\n`;
+            code += `add action=dst-nat chain=dstnat dst-port=53 protocol=udp to-addresses=${ip} to-ports=53 comment="v7_DNS_UDP"\\
+    connection-type="" ipsec-policy=out,none`;
+        }
 
         document.getElementById('output').innerText = code;
     }
 
     function copyText() {
-        const text = document.getElementById('output').innerText;
-        navigator.clipboard.writeText(text);
-        alert("Copied! / কপি করা হয়েছে!");
+        navigator.clipboard.writeText(document.getElementById('output').innerText);
+        alert("Copied to clipboard! / ক্লিপবোর্ডে কপি করা হয়েছে!");
     }
 
-    // Run on load
-    generateNat();
+    generate();
 </script>
 
 </body>
