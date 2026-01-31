@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MikroTik NAT Generator | Sohag1192</title>
+    <style>
+        :root { --primary: #0054a6; --bg: #f4f7f9; --dark: #333; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; width: 100%; max-width: 900px; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border-top: 5px solid var(--primary); }
+        .header { text-align: center; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 2fr 2fr 1.5fr auto; gap: 10px; align-items: end; margin-bottom: 20px; }
+        label { display: block; font-weight: bold; font-size: 12px; margin-bottom: 5px; color: #555; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button.add-btn { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button.add-btn:hover { background: #219150; }
+        .terminal { background: #1e1e1e; color: #00ff00; padding: 20px; border-radius: 8px; position: relative; min-height: 100px; }
+        pre { margin: 0; white-space: pre-wrap; font-family: 'Consolas', monospace; font-size: 14px; }
+        .action-bar { display: flex; justify-content: space-between; margin-top: 10px; }
+        .clear-btn { background: #c0392b; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+        .copy-btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+        th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
+        th { background: #f8f9fa; }
+        .del-btn { color: red; cursor: pointer; font-weight: bold; border: none; background: none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h2>🔥 MikroTik SRC-NAT & Masquerade</h2>
+        <p>Auto-generate <code>/ip firewall nat</code> rules</p>
+    </div>
+
+    <div class="grid-inputs">
+        <div>
+            <label>Action</label>
+            <select id="action">
+                <option value="src-nat">src-nat</option>
+                <option value="masquerade">masquerade</option>
+            </select>
+        </div>
+        <div>
+            <label>Out-Interface (e.g. 1.1-BDIX)</label>
+            <input type="text" id="interface" placeholder="your out interface vlan or interface  name">
+        </div>
+        <div>
+            <label>To-Address (IP / Range)</label>
+            <input type="text" id="ip" placeholder="Your Public Ip">
+        </div>
+        <div>
+            <label>Comment (Optional)</label>
+            <input type="text" id="comment" placeholder="ALL-NAT">
+        </div>
+        <div>
+            <button class="add-btn" onclick="addRule()">+ Add</button>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Action</th>
+                <th>Interface</th>
+                <th>To-Address</th>
+                <th>Comment</th>
+                <th>Remove</th>
+            </tr>
+        </thead>
+        <tbody id="listBody">
+            </tbody>
+    </table>
+
+    <div class="terminal">
+        <pre id="output"># Rules will appear here...</pre>
+    </div>
+    
+    <div class="action-bar">
+        <button class="clear-btn" onclick="clearAll()">Clear List</button>
+        <button class="copy-btn" onclick="copyCode()">Copy Script</button>
+    </div>
+</div>
+
+<script>
+    let rules = [];
+
+    function addRule() {
+        const action = document.getElementById('action').value;
+        const iface = document.getElementById('interface').value.trim();
+        const ip = document.getElementById('ip').value.trim();
+        const comment = document.getElementById('comment').value.trim();
+
+        if (!iface || !ip) {
+            alert("Please enter Interface and IP!");
+            return;
+        }
+
+        rules.push({ action, iface, ip, comment });
+        render();
+        
+        // Clear inputs for next entry
+        document.getElementById('interface').value = '';
+        document.getElementById('ip').value = '';
+        document.getElementById('comment').value = '';
+        document.getElementById('interface').focus();
+    }
+
+    function removeRule(index) {
+        rules.splice(index, 1);
+        render();
+    }
+
+    function clearAll() {
+        rules = [];
+        render();
+    }
+
+    function render() {
+        const tbody = document.getElementById('listBody');
+        const output = document.getElementById('output');
+        
+        // Update Table
+        tbody.innerHTML = rules.map((r, i) => `
+            <tr>
+                <td>${r.action}</td>
+                <td>${r.iface}</td>
+                <td>${r.ip}</td>
+                <td>${r.comment}</td>
+                <td><button class="del-btn" onclick="removeRule(${i})">X</button></td>
+            </tr>
+        `).join('');
+
+        // Generate Script
+        let script = `/ip firewall nat\n`;
+        script += rules.map(r => {
+            let line = `add action=${r.action} chain=srcnat out-interface=${r.iface}`;
+            
+            // Only add to-addresses if it's src-nat OR if user provided it for masquerade
+            if (r.ip) {
+                line += ` to-addresses=${r.ip}`;
+            }
+            
+            if (r.comment) {
+                line += ` comment="${r.comment}"`;
+            }
+            
+            return line;
+        }).join('\n');
+
+        output.textContent = script;
+    }
+
+    function copyCode() {
+        navigator.clipboard.writeText(document.getElementById('output').textContent);
+        alert("Script Copied!");
+    }
+</script>
+
+</body>
+</html>
