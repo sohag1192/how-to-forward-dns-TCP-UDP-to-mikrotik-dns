@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MikroTik EoIP Tunnel Generator | Sohag1192</title>
+    <meta name="description" content="Generate MikroTik EoIP Tunnel scripts for Site-to-Site Layer 2 bridging. Auto-generates config for both Router A and Router B.">
+    <meta name="author" content="Sohag1192">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚇</text></svg>">
+
+    <style>
+        :root { --primary: #2d3436; --accent: #00cec9; --bg: #dfe6e9; --code-bg: #2d3436; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #2d3436; padding: 20px; display: flex; justify-content: center; }
+        
+        .card { 
+            background: white; width: 100%; max-width: 1000px; padding: 40px; 
+            border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            border-top: 6px solid var(--accent); 
+        }
+
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #f1f2f6; padding-bottom: 20px; }
+        .header h1 { margin: 0; color: var(--primary); font-size: 28px; }
+        .header p { margin: 8px 0 0; color: #636e72; }
+
+        /* Inputs */
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+        
+        .section-box { background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; }
+        .section-title { font-weight: bold; margin-bottom: 15px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-size: 0.9em; }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 6px; color: #555; }
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; transition: 0.3s; }
+        input:focus { border-color: var(--accent); outline: none; }
+
+        .btn-gen { 
+            background: var(--accent); color: white; width: 100%; border: none; 
+            padding: 15px; border-radius: 8px; font-weight: bold; font-size: 16px; 
+            cursor: pointer; transition: 0.2s; margin-bottom: 30px;
+        }
+        .btn-gen:hover { background: #00b894; }
+
+        /* Output Grid */
+        .output-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        
+        .output-box { position: relative; }
+        .box-label { font-weight: bold; margin-bottom: 10px; display: block; color: var(--primary); }
+        
+        pre { 
+            background: var(--code-bg); color: #81ecec; padding: 20px; 
+            border-radius: 8px; overflow-x: auto; font-family: 'Consolas', monospace; 
+            min-height: 200px; font-size: 13px; line-height: 1.5; 
+        }
+        
+        .copy-btn { 
+            position: absolute; top: 35px; right: 10px; background: rgba(255,255,255,0.2); 
+            color: white; border: none; padding: 5px 12px; border-radius: 4px; 
+            cursor: pointer; font-size: 12px; transition: 0.2s;
+        }
+        .copy-btn:hover { background: rgba(255,255,255,0.4); }
+
+        .footer { text-align: center; margin-top: 30px; font-size: 13px; color: #888; border-top: 1px solid #eee; padding-top: 20px; }
+        .footer a { color: var(--accent); text-decoration: none; font-weight: bold; }
+
+        @media (max-width: 768px) {
+            .grid-container, .output-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h1>🚇 MikroTik EoIP Tunnel Generator</h1>
+        <p>Site-to-Site Layer 2 Bridging | Auto-generates both sides</p>
+    </div>
+
+    <div class="grid-container">
+        <div class="section-box">
+            <div class="section-title">Global Settings</div>
+            <div class="input-group">
+                <label>Tunnel ID (Must match both sides)</label>
+                <input type="number" id="tid" value="10">
+            </div>
+            <div class="input-group">
+                <label>Interface Name</label>
+                <input type="text" id="ifName" value="eoip-tunnel1">
+            </div>
+            <div class="input-group">
+                <label>Bridge Interface (To add ports)</label>
+                <input type="text" id="bridge" value="bridge-local">
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div class="section-title">IP Configuration</div>
+            <div class="input-group">
+                <label>Site A: Public IP (Source)</label>
+                <input type="text" id="ipA" placeholder="e.g. 103.1.1.1">
+            </div>
+            <div class="input-group">
+                <label>Site B: Public IP (Remote)</label>
+                <input type="text" id="ipB" placeholder="e.g. 202.5.5.5">
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-gen" onclick="generate()">⚡ Generate Configurations</button>
+
+    <div class="output-grid">
+        <div class="output-box">
+            <span class="box-label">Site A (Router A) Script</span>
+            <button class="copy-btn" onclick="copyText('outA')">Copy</button>
+            <pre id="outA"># Config for Router A...</pre>
+        </div>
+        <div class="output-box">
+            <span class="box-label">Site B (Router B) Script</span>
+            <button class="copy-btn" onclick="copyText('outB')">Copy</button>
+            <pre id="outB"># Config for Router B...</pre>
+        </div>
+    </div>
+
+    <div class="footer">
+        Developed by <a href="https://github.com/sohag1192/" target="_blank">Sohag1192</a>
+    </div>
+</div>
+
+<script>
+    function generate() {
+        const tid = document.getElementById('tid').value;
+        const name = document.getElementById('ifName').value;
+        const bridge = document.getElementById('bridge').value;
+        const ipA = document.getElementById('ipA').value.trim() || 'YOUR_SITE_A_IP';
+        const ipB = document.getElementById('ipB').value.trim() || 'YOUR_SITE_B_IP';
+
+        // Script for Router A
+        // Remote Address = Site B's IP
+        const scriptA = `# --- Router A Configuration ---
+# 1. Create EoIP Interface (Remote = Site B)
+/interface eoip
+add name=${name} remote-address=${ipB} tunnel-id=${tid} disabled=no
+
+# 2. Add to Bridge (Layer 2)
+/interface bridge port
+add bridge=${bridge} interface=${name}
+
+# Done! Ensure Firewall accepts GRE (Protocol 47)`;
+
+        // Script for Router B
+        // Remote Address = Site A's IP
+        const scriptB = `# --- Router B Configuration ---
+# 1. Create EoIP Interface (Remote = Site A)
+/interface eoip
+add name=${name} remote-address=${ipA} tunnel-id=${tid} disabled=no
+
+# 2. Add to Bridge (Layer 2)
+/interface bridge port
+add bridge=${bridge} interface=${name}
+
+# Done! Ensure Firewall accepts GRE (Protocol 47)`;
+
+        document.getElementById('outA').textContent = scriptA;
+        document.getElementById('outB').textContent = scriptB;
+    }
+
+    function copyText(id) {
+        navigator.clipboard.writeText(document.getElementById(id).textContent);
+        alert("Script Copied!");
+    }
+</script>
+
+</body>
+</html>
