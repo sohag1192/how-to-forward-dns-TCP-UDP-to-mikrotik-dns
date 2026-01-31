@@ -3,171 +3,265 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MikroTik Script Generators | Automation Tools by Sohag1192</title>
-    <meta name="description" content="Free online tools to generate MikroTik RouterOS scripts: DNS Forwarding, NAT, Mangle/TTL, and ISP Configuration. Supports v6 & v7.">
-    <meta name="keywords" content="MikroTik, RouterOS, Script Generator, ISP Config, UFW, Firewall, Automation, Sohag1192">
+    <title>MikroTik Automation Suite | Sohag1192</title>
+    <meta name="description" content="Central hub for MikroTik RouterOS automation tools: ISP Config, VLANs, NAT, DNS, EoIP, and Security generators.">
     <meta name="author" content="Sohag1192">
     
-    <meta property="og:title" content="MikroTik Script Generators">
-    <meta property="og:description" content="The ultimate collection of MikroTik automation tools.">
-    <meta property="og:url" content="https://github.com/sohag1192/MikroTik-Script-Generators">
-    <meta property="og:type" content="website">
-
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary: #2c3e50;
-            --accent: #3498db;
-            --bg: #f8f9fa;
-            --text: #333;
+            --primary: #2563eb;       /* Brand Blue */
+            --secondary: #1e293b;     /* Dark Slate */
+            --bg: #f8fafc;            /* Light Background */
             --card-bg: #ffffff;
-            --hover-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            --text-main: #334155;
+            --text-light: #64748b;
+            --hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg);
-            color: var(--text);
+            color: var(--text-main);
             margin: 0;
             padding: 0;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        /* --- Header Section --- */
+        header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: white;
-            padding: 60px 20px;
+            padding: 80px 20px 100px; /* Extra padding bottom for overlap */
             text-align: center;
         }
-        .hero h1 { margin: 0; font-size: 2.5rem; font-weight: 700; }
-        .hero p { margin: 10px 0 20px; font-size: 1.2rem; opacity: 0.9; }
-        .hero a {
-            color: white;
-            background: rgba(255,255,255,0.2);
-            padding: 8px 16px;
-            border-radius: 20px;
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: 0.3s;
-        }
-        .hero a:hover { background: rgba(255,255,255,0.4); }
 
-        /* Container */
+        header h1 {
+            font-size: 2.5rem;
+            margin: 0 0 15px 0;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+        }
+
+        .github-btn {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            padding: 10px 25px;
+            border-radius: 99px;
+            font-weight: 600;
+            transition: 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.9rem;
+        }
+        .github-btn:hover { 
+            background: rgba(255, 255, 255, 0.2); 
+            transform: translateY(-2px);
+        }
+
+        /* --- Main Content --- */
         .container {
-            max-width: 1100px;
-            margin: -40px auto 40px;
+            max-width: 1200px;
+            margin: -60px auto 50px auto; /* Negative margin pulls it up into header */
             padding: 0 20px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive Grid */
             gap: 25px;
         }
 
-        /* Tool Cards */
+        /* --- Cards --- */
         .card {
             background: var(--card-bg);
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: transform 0.3s, box-shadow 0.3s;
             text-decoration: none;
             color: inherit;
-            border-top: 5px solid transparent;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
         }
 
         .card:hover {
             transform: translateY(-5px);
             box-shadow: var(--hover-shadow);
+            border-color: var(--primary);
         }
 
-        /* Card Colors */
-        .card.dns { border-top-color: #e67e22; }
-        .card.nat { border-top-color: #27ae60; }
-        .card.mangle { border-top-color: #8e44ad; }
-        .card.isp { border-top-color: #e74c3c; }
-
-        .icon { font-size: 3rem; margin-bottom: 15px; }
-        .card h2 { margin: 0 0 10px; font-size: 1.5rem; color: var(--primary); }
-        .card p { font-size: 0.95rem; color: #666; margin-bottom: 20px; flex-grow: 1; }
-        
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #f1f2f6;
+        /* Icon Circle */
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            background: #eff6ff; /* Light Blue */
             color: var(--primary);
-            border-radius: 6px;
-            font-weight: 600;
-            text-align: center;
-            transition: 0.2s;
         }
-        .card:hover .btn { background: var(--primary); color: white; }
 
-        /* Footer */
-        .footer {
+        .card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .card p {
+            margin: 0;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            flex-grow: 1; /* Pushes arrow to bottom */
+            line-height: 1.6;
+        }
+
+        .arrow {
+            margin-top: 25px;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+        .card:hover .arrow { text-decoration: underline; }
+
+        /* Category Badges */
+        .category {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Category Colors */
+        .cat-isp { background: #fce7f3; color: #9d174d; } /* Pink */
+        .cat-net { background: #dcfce7; color: #166534; } /* Green */
+        .cat-sec { background: #fee2e2; color: #991b1b; } /* Red */
+        .cat-core { background: #dbeafe; color: #1e40af; } /* Blue */
+
+        /* --- Footer --- */
+        footer {
             text-align: center;
             padding: 40px;
-            color: #777;
-            border-top: 1px solid #eee;
+            border-top: 1px solid #e2e8f0;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            background: white;
+            margin-top: 50px;
         }
-        .footer a { color: var(--accent); text-decoration: none; font-weight: bold; }
+        footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            header h1 { font-size: 2rem; }
+            .container { margin-top: -40px; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="hero">
-        <h1>⚡ MikroTik Script Generators</h1>
-        <p>Easy Config Tools for RouterOS v6 & v7</p>
-        <a href="https://github.com/sohag1192/MikroTik-Script-Generators" target="_blank">View on GitHub ↗</a>
-    </div>
+    <header>
+        <h1>MikroTik Automation Suite</h1>
+        <p>Professional configuration generators for Network Engineers, ISPs, and System Admins.</p>
+        <a href="https://github.com/sohag1192/" target="_blank" class="github-btn">
+            View Project on GitHub &nearr;
+        </a>
+    </header>
 
     <div class="container">
-
-        <a href="dns_generator.html" class="card dns">
-            <div>
-                <div class="icon">🛰️</div>
-                <h2>DNS Forwarding</h2>
-                <p>Redirect TCP/UDP DNS requests to your specific server or local cache. Essential for controlling network traffic.</p>
-            </div>
-            <span class="btn">Open Generator &rarr;</span>
+        
+        <a href="isp_generator.html" class="card">
+            <span class="category cat-isp">ISP Core</span>
+            <div class="icon-box">🏢</div>
+            <h3>ISP Mega Config</h3>
+            <p>Generate full ISP setup: IP Pools, Profiles, Split Queues (BDIX, GGC, FB), and NAT in a single script.</p>
+            <div class="arrow">Launch Tool &rarr;</div>
         </a>
 
-        <a href="nat_generator.html" class="card nat">
-            <div>
-                <div class="icon">🔥</div>
-                <h2>NAT & Masquerade</h2>
-                <p>Bulk generate <code>src-nat</code> and <code>masquerade</code> rules for specific interfaces. Great for multi-WAN setups.</p>
-            </div>
-            <span class="btn">Open Generator &rarr;</span>
+        <a href="vlan_generator.html" class="card">
+            <span class="category cat-net">Switching</span>
+            <div class="icon-box">🖧</div>
+            <h3>VLAN Generator</h3>
+            <p>Bulk create VLAN interfaces, IP addresses, DHCP Servers, and Pools for multiple trunk ports.</p>
+            <div class="arrow">Launch Tool &rarr;</div>
         </a>
 
-        <a href="mangle_generator.html" class="card mangle">
-            <div>
-                <div class="icon">🛡️</div>
-                <h2>Mangle & TTL</h2>
-                <p>Change TTL values to hide hops and detect secondary routers (Anti-Tethering) automatically.</p>
-            </div>
-            <span class="btn">Open Generator &rarr;</span>
+        <a href="eoip_generator.html" class="card">
+            <span class="category cat-net">Tunneling</span>
+            <div class="icon-box">🚇</div>
+            <h3>EoIP Tunnels</h3>
+            <p>Site-to-Site Layer 2 bridging generator. Automatically creates matching scripts for Router A and Router B.</p>
+            <div class="arrow">Launch Tool &rarr;</div>
         </a>
 
-        <a href="isp_generator.html" class="card isp">
-            <div>
-                <div class="icon">🏢</div>
-                <h2>ISP Mega Config</h2>
-                <p>Full Setup: IP Pools, Profiles, Queues, and Split Traffic for BDIX, GGC, Facebook, and CDN.</p>
-            </div>
-            <span class="btn">Open Generator &rarr;</span>
+        <a href="port_forward.html" class="card">
+            <span class="category cat-core">NAT</span>
+            <div class="icon-box">🌐</div>
+            <h3>Port Forwarding</h3>
+            <p>Expose internal servers (Web, CCTV, NAS) to the internet using Destination NAT (dst-nat) mapping.</p>
+            <div class="arrow">Launch Tool &rarr;</div>
+        </a>
+
+        <a href="nat_generator.html" class="card">
+            <span class="category cat-core">NAT</span>
+            <div class="icon-box">🔥</div>
+            <h3>Src-NAT & Masq</h3>
+            <p>Generate Masquerade rules for specific interfaces or map private IPs to specific Public IPs.</p>
+            <div class="arrow">Launch Tool &rarr;</div>
+        </a>
+
+        <a href="dns_generator.html" class="card">
+            <span class="category cat-core">DNS</span>
+            <div class="icon-box">🛰️</div>
+            <h3>DNS Redirect</h3>
+            <p>Force all user DNS traffic (TCP/UDP) to your specific local caching server transparently.</p>
+            <div class="arrow">Launch Tool &rarr;</div>
+        </a>
+
+        <a href="raw_filter.html" class="card">
+            <span class="category cat-sec">Security</span>
+            <div class="icon-box">🛑</div>
+            <h3>Raw Firewall</h3>
+            <p>CPU-efficient packet dropping. Block IP ranges or DDoS attacks before connection tracking occurs.</p>
+            <div class="arrow">Launch Tool &rarr;</div>
+        </a>
+
+        <a href="mangle_generator.html" class="card">
+            <span class="category cat-sec">Security</span>
+            <div class="icon-box">🛡️</div>
+            <h3>Mangle & TTL</h3>
+            <p>Modify TTL to hide hops or detect secondary routers (Anti-Tethering) on your network.</p>
+            <div class="arrow">Launch Tool &rarr;</div>
         </a>
 
     </div>
 
-    <div class="footer">
-        <p>&copy; <script>document.write(new Date().getFullYear())</script> MikroTik Tools. Open Source.</p>
+    <footer>
+        <p>&copy; 2024 MikroTik Tools. Built for RouterOS v6 & v7.</p>
         <p>Developed by <a href="https://github.com/sohag1192/" target="_blank">Sohag1192</a></p>
-    </div>
+    </footer>
 
 </body>
 </html>
