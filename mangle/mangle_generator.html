@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MikroTik Mangle Generator | Sohag1192</title>
+    <meta name="description" content="Generate MikroTik Mangle rules for TTL modification and Secondary Router (Anti-Tethering) detection.">
+    <style>
+        :root { --primary: #6c5ce7; --bg: #f4f7f9; --text: #333; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
+        .container { background: white; width: 100%; max-width: 900px; padding: 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-top: 5px solid var(--primary); }
+        h2 { text-align: center; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ddd; }
+        .tab { padding: 10px 20px; cursor: pointer; font-weight: bold; color: #777; border-radius: 5px 5px 0 0; }
+        .tab.active { background: var(--primary); color: white; }
+        
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; }
+        textarea { width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: monospace; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        
+        .terminal { background: #1e1e1e; color: #fab1a0; padding: 20px; border-radius: 8px; margin-top: 20px; position: relative; }
+        pre { margin: 0; white-space: pre-wrap; font-family: 'Consolas', monospace; font-size: 13px; }
+        
+        .btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        .btn:hover { opacity: 0.9; }
+        
+        .copy-btn { position: absolute; top: 10px; right: 10px; background: #444; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🛡️ MikroTik Mangle Generator</h2>
+    
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('ttl')">1. Change TTL</div>
+        <div class="tab" onclick="switchTab('detect')">2. Detect 2nd Router</div>
+    </div>
+
+    <div id="ttl" class="panel active">
+        <p style="font-size:0.9em; color:#666;">Use this to normalize traffic or hide your router from traceroute.</p>
+        <div class="input-group">
+            <label>Targets (One per line: Interface Name OR IP Range)</label>
+            <textarea id="ttlTargets" placeholder="710-GPON-OLT-1-202&#10;172.20.0.0/16"></textarea>
+        </div>
+        <div class="input-group">
+            <label>New TTL Value</label>
+            <input type="number" id="ttlValue" value="1" placeholder="e.g. 1 or 64 or 128">
+            <small>Common values: <b>1</b> (Hide Hop), <b>64</b> (Linux Standard), <b>128</b> (Windows Standard)</small>
+        </div>
+        <button class="btn" onclick="genTTL()">Generate TTL Rules</button>
+    </div>
+
+    <div id="detect" class="panel">
+        <p style="font-size:0.9em; color:#666;">Detects devices behind a NAT router (Shared Internet) by analyzing TTL decrement.</p>
+        <div class="input-group">
+            <label>Source IP Ranges (One per line)</label>
+            <textarea id="detectIps" placeholder="172.22.12.0/22&#10;172.20.72.0/21"></textarea>
+        </div>
+        <div class="input-group">
+            <label>Add to Address List Name</label>
+            <input type="text" id="listName" value="2nd_Router_Detected">
+        </div>
+        <div class="input-group">
+            <label>TTL Threshold (Less Than)</label>
+            <input type="number" id="ttlThreshold" value="62">
+            <small>Packets arriving with TTL < 62 usually passed through a customer router.</small>
+        </div>
+        <button class="btn" onclick="genDetect()">Generate Detection Rules</button>
+    </div>
+
+    <div class="terminal">
+        <button class="copy-btn" onclick="copyCode()">Copy</button>
+        <pre id="output"># Rules will appear here...</pre>
+    </div>
+</div>
+
+<script>
+    function switchTab(id) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function genTTL() {
+        const targets = document.getElementById('ttlTargets').value.split('\n');
+        const ttl = document.getElementById('ttlValue').value;
+        let script = `/ip firewall mangle\n`;
+
+        targets.forEach(t => {
+            t = t.trim();
+            if(!t) return;
+            
+            let matcher = "";
+            // Check if input looks like an IP (contains numbers and dots)
+            if(t.match(/^\d+\.\d+/)) {
+                matcher = `dst-address=${t}`;
+            } else {
+                matcher = `out-interface=${t}`;
+            }
+
+            script += `add action=change-ttl chain=postrouting ${matcher} new-ttl=set:${ttl} comment="Set-TTL-${ttl}"\n`;
+        });
+        document.getElementById('output').textContent = script;
+    }
+
+    function genDetect() {
+        const ips = document.getElementById('detectIps').value.split('\n');
+        const list = document.getElementById('listName').value;
+        const thresh = document.getElementById('ttlThreshold').value;
+        let script = `/ip firewall mangle\n`;
+
+        ips.forEach(ip => {
+            ip = ip.trim();
+            if(!ip) return;
+            
+            script += `add action=add-src-to-address-list address-list=${list} address-list-timeout=30m chain=forward connection-state=established in-interface=all-ppp src-address=${ip} ttl=less-than:${thresh} comment="Detect-Secondary-Router"\n`;
+        });
+        document.getElementById('output').textContent = script;
+    }
+
+    function copyCode() {
+        navigator.clipboard.writeText(document.getElementById('output').textContent);
+        alert("Copied to clipboard!");
+    }
+</script>
+
+</body>
+</html>

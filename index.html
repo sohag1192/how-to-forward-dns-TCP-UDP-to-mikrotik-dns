@@ -3,196 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MikroTik DNS NAT Generator | Sohag1192</title>
-    <meta name="description" content="Generate clean MikroTik /ip/firewall/nat rules for DNS forwarding. Includes visual guides for TCP & UDP.">
-    <meta name="keywords" content="MikroTik, DNS, NAT, dst-nat, RouterOS, Firewall, Sohag1192">
-    <meta name="author" content="Sohag1192">
-    
-    <meta property="og:title" content="MikroTik DNS NAT Generator">
-    <meta property="og:description" content="Auto-generate DNS rules with visual setup guides.">
-    <meta property="og:url" content="https://github.com/sohag1192/UFW-Firewall-Generator/">
-
+    <title>ISP Page Generator</title>
     <style>
-        :root {
-            --primary: #0054a6;
-            --bg: #f4f7f9;
-            --card-bg: #ffffff;
-            --text: #333;
-            --border: #e0e0e0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .main-wrapper {
-            width: 100%;
-            max-width: 800px;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        /* Common Card Style */
-        .card {
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            border-top: 6px solid var(--primary);
-        }
-
-        /* Generator Section Styles */
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
-        .header h1 { margin: 0; color: var(--primary); font-size: 24px; }
-        .header p { margin: 5px 0 0; color: #666; font-size: 14px; }
-        
-        .badge {
-            display: inline-block; background: #e3f2fd; color: #1565c0;
-            padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-top: 5px;
-        }
-
-        .input-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #444; }
-        .input-group input {
-            width: 100%; padding: 12px; border: 2px solid var(--border);
-            border-radius: 6px; font-size: 16px; box-sizing: border-box;
-            transition: border-color 0.3s;
-        }
-        .input-group input:focus { border-color: var(--primary); outline: none; }
-
-        .terminal-window {
-            background: #1e1e1e; border-radius: 8px; position: relative;
-            margin-top: 25px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-        }
-
-        .terminal-header {
-            background: #333; color: #fff; padding: 8px 15px;
-            border-radius: 8px 8px 0 0; font-size: 12px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-
-        .copy-btn {
-            background: var(--primary); color: white; border: none;
-            padding: 5px 12px; border-radius: 4px; cursor: pointer;
-            font-size: 12px; font-weight: bold;
-        }
-
-        pre {
-            color: #00ff00; padding: 20px; margin: 0; overflow-x: auto;
-            white-space: pre-wrap; font-family: 'Consolas', monospace; font-size: 14px;
-        }
-
-        /* Visual Guide Styles */
-        .guide-title {
-            text-align: center; color: #444; margin-bottom: 20px;
-            font-size: 20px; border-bottom: 2px solid var(--primary);
-            display: inline-block; padding-bottom: 5px;
-        }
-        
-        .step-block { margin-bottom: 40px; }
-        .step-label { font-weight: bold; color: var(--primary); margin-bottom: 10px; display: block; }
-        
-        img {
-            width: 100%; height: auto; border-radius: 8px;
-            border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
-        }
-
-        .footer { text-align: center; margin-top: 10px; font-size: 13px; color: #888; }
-        .footer a { color: var(--primary); text-decoration: none; font-weight: bold; }
+        /* CSS for the Generator Tool Interface */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; gap: 20px; height: 100vh; box-sizing: border-box; }
+        .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .left { width: 350px; overflow-y: auto; }
+        .right { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        h2 { margin-top: 0; color: #333; border-bottom: 2px solid #0078d4; padding-bottom: 10px; }
+        label { font-weight: bold; font-size: 12px; color: #555; margin-top: 10px; display: block; }
+        input, textarea, select { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        input[type="color"] { height: 40px; padding: 0; }
+        button { background: #0078d4; color: white; border: none; padding: 10px; margin-top: 20px; cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        button:hover { background: #005a9e; }
+        textarea#outputCode { height: 150px; font-family: monospace; font-size: 12px; background: #2d2d2d; color: #ccc; resize: none; }
+        iframe { flex: 1; border: 1px solid #ddd; background: white; border-radius: 4px; }
+        .row { display: flex; gap: 10px; }
+        .row > div { flex: 1; }
     </style>
 </head>
 <body>
 
-<div class="main-wrapper">
+    <div class="panel left">
+        <h2>🛠️ Page Generator</h2>
+        
+        <label>Notice Type</label>
+        <select id="templateType" onchange="updateDefaults()">
+            <option value="payment">⚠️ Payment Due / Expired</option>
+            <option value="maintenance">🔧 System Maintenance</option>
+            <option value="welcome">✅ Welcome / Active</option>
+        </select>
 
+        <label>Company Name</label>
+        <input type="text" id="companyName" value="BestNet ISP">
+
+        <label>Main Headline</label>
+        <input type="text" id="headline" value="Internet Service Suspended">
+
+        <label>Message Body</label>
+        <textarea id="message" rows="4">Your internet service has been suspended due to an overdue bill. Please pay your bill to restore service.</textarea>
+
+        <label>Support Phone / Bkash</label>
+        <input type="text" id="phone" value="01700-000000">
+
+        <div class="row">
+            <div>
+                <label>Theme Color</label>
+                <input type="color" id="themeColor" value="#e74c3c">
+            </div>
+            <div>
+                <label>Text Color</label>
+                <input type="color" id="textColor" value="#ffffff">
+            </div>
+        </div>
+
+        <button onclick="generateHTML()">⚡ Generate & Preview</button>
+        <button onclick="copyToClipboard()" style="background:#27ae60;">📋 Copy HTML Code</button>
+    </div>
+
+    <div class="panel right">
+        <h2>👁️ Live Preview</h2>
+        <iframe id="previewFrame"></iframe>
+        
+        <label>Generated HTML Code (Copy this)</label>
+        <textarea id="outputCode" readonly></textarea>
+    </div>
+
+    <script>
+        function updateDefaults() {
+            const type = document.getElementById('templateType').value;
+            const headline = document.getElementById('headline');
+            const message = document.getElementById('message');
+            const color = document.getElementById('themeColor');
+
+            if (type === 'payment') {
+                headline.value = "Internet Service Suspended";
+                message.value = "Your connection has been temporarily blocked due to pending dues. Please clear your payment immediately to enjoy uninterrupted service.";
+                color.value = "#e74c3c"; // Red
+            } else if (type === 'maintenance') {
+                headline.value = "Scheduled Maintenance";
+                message.value = "We are currently upgrading our servers to provide you better speed. Service will be restored shortly. Thank you for your patience.";
+                color.value = "#f39c12"; // Orange
+            } else if (type === 'welcome') {
+                headline.value = "Welcome to BestNet!";
+                message.value = "Your internet connection is now active. Enjoy high-speed browsing and unlimited downloads.";
+                color.value = "#2ecc71"; // Green
+            }
+            generateHTML();
+        }
+
+        function generateHTML() {
+            const company = document.getElementById('companyName').value;
+            const headline = document.getElementById('headline').value;
+            const msg = document.getElementById('message').value;
+            const phone = document.getElementById('phone').value;
+            const theme = document.getElementById('themeColor').value;
+            const textCol = document.getElementById('textColor').value;
+
+            const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${headline}</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .card { background: white; max-width: 400px; width: 90%; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; text-align: center; }
+        .header { background-color: ${theme}; color: ${textCol}; padding: 30px 20px; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .header h3 { margin: 5px 0 0; opacity: 0.9; font-weight: normal; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        .body { padding: 30px 20px; color: #555; line-height: 1.6; }
+        .contact { background: #f9f9f9; padding: 15px; border-top: 1px solid #eee; font-weight: bold; color: #333; }
+        .btn { display: inline-block; margin-top: 15px; padding: 10px 20px; background: ${theme}; color: ${textCol}; text-decoration: none; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
     <div class="card">
         <div class="header">
-            <h1>🛰️ MikroTik DNS NAT Generator</h1>
-            <p><strong>EN:</strong> Clean dst-nat rules | <strong>BN:</strong> ক্লিন dst-nat রুলস</p>
-            <div class="badge">v6 & v7 Compatible</div>
+            <h3>${company}</h3>
+            <h1>${headline}</h1>
         </div>
-
-        <div class="input-group">
-            <label for="targetIp">Target DNS IP / টার্গেট ডিএনএস আইপি:</label>
-            <input type="text" id="targetIp" value="8.8.8.8" placeholder="e.g. 8.8.8.8" oninput="generateScript()">
+        <div class="body">
+            <p>${msg}</p>
         </div>
-
-        <div class="terminal-window">
-            <div class="terminal-header">
-                <span>Script Output (/ip/firewall/nat)</span>
-                <button class="copy-btn" onclick="copyCode()">Copy Code</button>
-            </div>
-            <pre id="output"></pre>
+        <div class="contact">
+            📞 Support: ${phone}
         </div>
     </div>
+</body>
+</html>`;
 
-    <div class="card">
-        <h1 style="text-align:center; color:var(--primary); margin-bottom:30px;">
-            📸 How To Forward DNS (TCP & UDP)
-        </h1>
-
-        <div class="step-block">
-            <h2 class="guide-title">1. DNS Forwarding (TCP)</h2>
-            <span class="step-label">Step A: General Settings</span>
-            <img src="img/1.png" alt="DNS TCP Settings Step 1">
+            document.getElementById('outputCode').value = html;
             
-            <span class="step-label">Step B: Action Tab</span>
-            <img src="img/2.png" alt="DNS TCP Settings Step 2">
-        </div>
+            // Update Preview
+            const iframe = document.getElementById('previewFrame');
+            iframe.contentWindow.document.open();
+            iframe.contentWindow.document.write(html);
+            iframe.contentWindow.document.close();
+        }
 
-        <div class="step-block">
-            <h2 class="guide-title">2. DNS Forwarding (UDP)</h2>
-            <span class="step-label">Step A: General Settings</span>
-            <img src="img/3.png" alt="DNS UDP Settings Step 1">
-            
-            <span class="step-label">Step B: Action Tab</span>
-            <img src="img/2.png" alt="DNS UDP Settings Step 2">
-        </div>
+        function copyToClipboard() {
+            const copyText = document.getElementById("outputCode");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(copyText.value);
+            alert("HTML Code Copied!");
+        }
 
-        <div class="footer">
-            Developed by <a href="https://github.com/sohag1192/" target="_blank">Sohag1192</a>
-        </div>
-    </div>
-
-</div>
-
-<script>
-    function generateScript() {
-        const ip = document.getElementById('targetIp').value.trim() || '8.8.8.8';
-        
-        // Clean script format as requested
-        const script = `/ip/firewall/nat/
-add action=dst-nat chain=dstnat dst-port=53 protocol=tcp to-addresses=${ip} to-ports=53
-add action=dst-nat chain=dstnat dst-port=53 protocol=udp to-addresses=${ip} to-ports=53`;
-
-        document.getElementById('output').textContent = script;
-    }
-
-    function copyCode() {
-        const code = document.getElementById('output').textContent;
-        navigator.clipboard.writeText(code).then(() => {
-            const btn = document.querySelector('.copy-btn');
-            const originalText = btn.innerText;
-            btn.innerText = "Copied!";
-            btn.style.backgroundColor = "#27ae60";
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.backgroundColor = "";
-            }, 2000);
-        });
-    }
-
-    // Initialize on load
-    window.onload = generateScript;
-</script>
-
+        // Generate on load
+        window.onload = generateHTML;
+    </script>
 </body>
 </html>
