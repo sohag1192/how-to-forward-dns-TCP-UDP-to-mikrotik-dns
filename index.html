@@ -3,155 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISP Page Generator</title>
+    <title>ISP Config Generator | Sohag1192</title>
+    <meta name="description" content="Generate full MikroTik ISP configuration: IP Pools, PPPoE Profiles, PCQ Queues, and Split Traffic Shaping (GGC/FNA/BCDN).">
     <style>
-        /* CSS for the Generator Tool Interface */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; gap: 20px; height: 100vh; box-sizing: border-box; }
-        .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
-        .left { width: 350px; overflow-y: auto; }
-        .right { flex: 1; display: flex; flex-direction: column; gap: 10px; }
-        h2 { margin-top: 0; color: #333; border-bottom: 2px solid #0078d4; padding-bottom: 10px; }
-        label { font-weight: bold; font-size: 12px; color: #555; margin-top: 10px; display: block; }
-        input, textarea, select { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        input[type="color"] { height: 40px; padding: 0; }
-        button { background: #0078d4; color: white; border: none; padding: 10px; margin-top: 20px; cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 14px; transition: 0.2s; }
-        button:hover { background: #005a9e; }
-        textarea#outputCode { height: 150px; font-family: monospace; font-size: 12px; background: #2d2d2d; color: #ccc; resize: none; }
-        iframe { flex: 1; border: 1px solid #ddd; background: white; border-radius: 4px; }
-        .row { display: flex; gap: 10px; }
-        .row > div { flex: 1; }
-    </style>
-</head>
-<body>
-
-    <div class="panel left">
-        <h2>🛠️ Page Generator</h2>
+        :root { --primary: #2c3e50; --accent: #3498db; --bg: #ecf0f1; --code-bg: #1e1e1e; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 1200px; background: white; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
         
-        <label>Notice Type</label>
-        <select id="templateType" onchange="updateDefaults()">
-            <option value="payment">⚠️ Payment Due / Expired</option>
-            <option value="maintenance">🔧 System Maintenance</option>
-            <option value="welcome">✅ Welcome / Active</option>
-        </select>
-
-        <label>Company Name</label>
-        <input type="text" id="companyName" value="BestNet ISP">
-
-        <label>Main Headline</label>
-        <input type="text" id="headline" value="Internet Service Suspended">
-
-        <label>Message Body</label>
-        <textarea id="message" rows="4">Your internet service has been suspended due to an overdue bill. Please pay your bill to restore service.</textarea>
-
-        <label>Support Phone / Bkash</label>
-        <input type="text" id="phone" value="01700-000000">
-
-        <div class="row">
-            <div>
-                <label>Theme Color</label>
-                <input type="color" id="themeColor" value="#e74c3c">
-            </div>
-            <div>
-                <label>Text Color</label>
-                <input type="color" id="textColor" value="#ffffff">
-            </div>
-        </div>
-
-        <button onclick="generateHTML()">⚡ Generate & Preview</button>
-        <button onclick="copyToClipboard()" style="background:#27ae60;">📋 Copy HTML Code</button>
-    </div>
-
-    <div class="panel right">
-        <h2>👁️ Live Preview</h2>
-        <iframe id="previewFrame"></iframe>
-        
-        <label>Generated HTML Code (Copy this)</label>
-        <textarea id="outputCode" readonly></textarea>
-    </div>
-
-    <script>
-        function updateDefaults() {
-            const type = document.getElementById('templateType').value;
-            const headline = document.getElementById('headline');
-            const message = document.getElementById('message');
-            const color = document.getElementById('themeColor');
-
-            if (type === 'payment') {
-                headline.value = "Internet Service Suspended";
-                message.value = "Your connection has been temporarily blocked due to pending dues. Please clear your payment immediately to enjoy uninterrupted service.";
-                color.value = "#e74c3c"; // Red
-            } else if (type === 'maintenance') {
-                headline.value = "Scheduled Maintenance";
-                message.value = "We are currently upgrading our servers to provide you better speed. Service will be restored shortly. Thank you for your patience.";
-                color.value = "#f39c12"; // Orange
-            } else if (type === 'welcome') {
-                headline.value = "Welcome to BestNet!";
-                message.value = "Your internet connection is now active. Enjoy high-speed browsing and unlimited downloads.";
-                color.value = "#2ecc71"; // Green
-            }
-            generateHTML();
-        }
-
-        function generateHTML() {
-            const company = document.getElementById('companyName').value;
-            const headline = document.getElementById('headline').value;
-            const msg = document.getElementById('message').value;
-            const phone = document.getElementById('phone').value;
-            const theme = document.getElementById('themeColor').value;
-            const textCol = document.getElementById('textColor').value;
-
-            const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${headline}</title>
-    <style>
-        body { margin: 0; padding: 0; font-family: sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .card { background: white; max-width: 400px; width: 90%; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; text-align: center; }
-        .header { background-color: ${theme}; color: ${textCol}; padding: 30px 20px; }
+        /* Header */
+        .header { background: var(--primary); color: white; padding: 20px; text-align: center; }
         .header h1 { margin: 0; font-size: 24px; }
-        .header h3 { margin: 5px 0 0; opacity: 0.9; font-weight: normal; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
-        .body { padding: 30px 20px; color: #555; line-height: 1.6; }
-        .contact { background: #f9f9f9; padding: 15px; border-top: 1px solid #eee; font-weight: bold; color: #333; }
-        .btn { display: inline-block; margin-top: 15px; padding: 10px 20px; background: ${theme}; color: ${textCol}; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .header p { margin: 5px 0 0; opacity: 0.8; }
+
+        /* Controls Grid */
+        .controls { padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; border-bottom: 1px solid #ddd; }
+        .control-group label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; font-size: 0.9rem; }
+        .control-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .control-group small { display: block; margin-top: 5px; color: #888; font-size: 0.8rem; }
+
+        /* Plans Table */
+        .plans-section { padding: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th { background: #f8f9fa; text-align: left; padding: 12px; border-bottom: 2px solid #ddd; color: #555; font-size: 0.9rem; }
+        td { padding: 8px; border-bottom: 1px solid #eee; }
+        input.table-input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        
+        /* Output Area */
+        .output-section { padding: 20px; background: #fafafa; border-top: 1px solid #ddd; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn { padding: 10px 20px; border: none; background: #ddd; cursor: pointer; border-radius: 5px; font-weight: bold; color: #555; }
+        .tab-btn.active { background: var(--accent); color: white; }
+        
+        .code-block { display: none; }
+        .code-block.active { display: block; }
+        
+        pre { background: var(--code-bg); color: #a9b7c6; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: 'Consolas', monospace; height: 500px; }
+        
+        .actions { margin-top: 20px; display: flex; gap: 15px; justify-content: center; }
+        .btn { padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.2s; }
+        .btn-gen { background: var(--accent); color: white; }
+        .btn-gen:hover { background: #2980b9; }
+        .btn-copy { background: #27ae60; color: white; }
+        
+        .badge { background: #e74c3c; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7em; margin-left: 5px; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <div class="header">
-            <h3>${company}</h3>
-            <h1>${headline}</h1>
+
+<div class="app-container">
+    <div class="header">
+        <h1>🛠️ ISP Config Generator (Mega Script)</h1>
+        <p>Pools • Profiles • NAT • Mangle • PCQ • Simple Queues</p>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>Base IP Subnet (Prefix)</label>
+            <input type="text" id="baseIp" value="172.21">
+            <small>Example: 172.21 (Generates 172.21.x.x)</small>
         </div>
-        <div class="body">
-            <p>${msg}</p>
+        <div class="control-group">
+            <label>Start Octet</label>
+            <input type="number" id="startOctet" value="96">
+            <small>Where IP pools start (e.g. 96 for 172.21.96.0)</small>
         </div>
-        <div class="contact">
-            📞 Support: ${phone}
+        <div class="control-group">
+            <label>DNS Servers</label>
+            <input type="text" id="dns" value="103.135.132.84,103.41.213.2">
+        </div>
+        <div class="control-group">
+            <label>GGC Interface Name</label>
+            <input type="text" id="ifGGC" value="1.3-2683-GGC">
+        </div>
+        <div class="control-group">
+            <label>Facebook Interface Name</label>
+            <input type="text" id="ifFB" value="1.4-2684-FB">
+        </div>
+        <div class="control-group">
+            <label>TikTok/CDN Interface Name</label>
+            <input type="text" id="ifCDN" value="1.8-2688-TIK">
         </div>
     </div>
-</body>
-</html>`;
 
-            document.getElementById('outputCode').value = html;
+    <div class="plans-section">
+        <h3>📦 Package Configuration</h3>
+        <table id="plansTable">
+            <thead>
+                <tr>
+                    <th width="5%">ID</th>
+                    <th width="20%">Plan Name</th>
+                    <th width="10%">Rate (Mbps)</th>
+                    <th width="10%">GGC Limit</th>
+                    <th width="10%">FB Limit</th>
+                    <th width="10%">CDN Limit</th>
+                    <th width="10%">Price (Tk)</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <div class="actions">
+        <button class="btn btn-gen" onclick="generateConfig()">⚡ Generate Configuration</button>
+    </div>
+
+    <div class="output-section">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('full')">Full Script</button>
+            <button class="tab-btn" onclick="showTab('queues')">Queues Only</button>
+            <button class="tab-btn" onclick="showTab('ip')">IP & Pools</button>
+        </div>
+
+        <div id="full" class="code-block active">
+            <div style="text-align:right; margin-bottom:5px;">
+                <button class="btn btn-copy" onclick="copyText('outFull')">Copy Full Script</button>
+            </div>
+            <pre id="outFull"># Click Generate to create the script...</pre>
+        </div>
+        
+        <div id="queues" class="code-block">
+            <pre id="outQueues"># Queues will appear here...</pre>
+        </div>
+
+        <div id="ip" class="code-block">
+            <pre id="outIP"># Pools will appear here...</pre>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Default Plan Data
+    const defaultPlans = [
+        {name: "Bronze", rate: 20, ggc: 30, fb: 30, cdn: 30, price: 500},
+        {name: "Silver", rate: 25, ggc: 40, fb: 40, cdn: 40, price: 600},
+        {name: "Gold", rate: 35, ggc: 50, fb: 50, cdn: 50, price: 700},
+        {name: "Platinum", rate: 45, ggc: 60, fb: 60, cdn: 60, price: 800},
+        {name: "Diamond", rate: 55, ggc: 70, fb: 70, cdn: 70, price: 1000},
+        {name: "Sapphire", rate: 65, ggc: 80, fb: 80, cdn: 80, price: 1200},
+        {name: "Ruby", rate: 75, ggc: 90, fb: 90, cdn: 90, price: 1400},
+        {name: "Emerald", rate: 85, ggc: 90, fb: 90, cdn: 90, price: 1600},
+        {name: "Pearl", rate: 95, ggc: 100, fb: 100, cdn: 100, price: 1800},
+        {name: "Onyx", rate: 100, ggc: 100, fb: 100, cdn: 100, price: 2000}
+    ];
+
+    function initTable() {
+        const tbody = document.querySelector('#plansTable tbody');
+        tbody.innerHTML = defaultPlans.map((p, i) => `
+            <tr>
+                <td>P${i+1}</td>
+                <td><input class="table-input" id="n${i}" value="${p.name}"></td>
+                <td><input class="table-input" type="number" id="r${i}" value="${p.rate}"></td>
+                <td><input class="table-input" type="number" id="g${i}" value="${p.ggc}"></td>
+                <td><input class="table-input" type="number" id="f${i}" value="${p.fb}"></td>
+                <td><input class="table-input" type="number" id="c${i}" value="${p.cdn}"></td>
+                <td><input class="table-input" type="number" id="p${i}" value="${p.price}"></td>
+            </tr>
+        `).join('');
+    }
+
+    function generateConfig() {
+        const baseIp = document.getElementById('baseIp').value.trim();
+        let currentOctet = parseInt(document.getElementById('startOctet').value);
+        const dns = document.getElementById('dns').value;
+        const ifGGC = document.getElementById('ifGGC').value;
+        const ifFB = document.getElementById('ifFB').value;
+        const ifCDN = document.getElementById('ifCDN').value;
+
+        let scriptPools = "/ip pool\n";
+        let scriptProfiles = "/ppp profile\n";
+        let scriptNAT = "/ip firewall nat\n";
+        let scriptMangle = "/ip firewall mangle\n";
+        let scriptRaw = "/ip firewall raw\nadd chain=prerouting action=drop src-address-list=2_RT_BLOCK ttl=1-62 comment=\"Drop Shared Connection\"\n\n";
+        let scriptPCQ = "/queue type\n";
+        let scriptQueues = "/queue simple\n";
+
+        // Mangle Header
+        scriptMangle += `add chain=forward action=add-src-to-address-list address-list=2_RT_BLOCK address-list-timeout=30s in-interface=all-ppp connection-state=established ttl=1-61 comment="Detect Shared Connection"\n`;
+
+        // 1. Loop through plans
+        for(let i=0; i<10; i++) {
+            const name = document.getElementById(`n${i}`).value;
+            const rate = document.getElementById(`r${i}`).value;
+            const ggc = document.getElementById(`g${i}`).value;
+            const fb = document.getElementById(`f${i}`).value;
+            const cdn = document.getElementById(`c${i}`).value;
+            const price = document.getElementById(`p${i}`).value;
+
+            // IP Logic: Each plan gets 16 subnets (a /20 block)
+            // e.g. Start 96. End = 96 + 15 = 111.
+            const startRange = currentOctet;
+            const endRange = currentOctet + 15;
             
-            // Update Preview
-            const iframe = document.getElementById('previewFrame');
-            iframe.contentWindow.document.open();
-            iframe.contentWindow.document.write(html);
-            iframe.contentWindow.document.close();
+            // Pool Range
+            const poolName = `pool_P${i+1}_${name.toLowerCase()}`;
+            scriptPools += `add name="${poolName}" ranges=${baseIp}.${startRange}.2-${baseIp}.${endRange}.254\n`;
+
+            // Profile
+            scriptProfiles += `add name="P${i+1}_${name}_${rate}Mbps" local-address=${baseIp}.${startRange}.1 remote-address="${poolName}" only-one=yes dns-server=${dns} rate-limit=${rate}M/${rate}M comment="Price: ${price} Tk"\n`;
+
+            // NAT (One rule per plan block to be safe and accurate)
+            scriptNAT += `add chain=srcnat action=masquerade src-address=${baseIp}.${startRange}.0/20 comment="NAT for P${i+1} ${name}"\n`;
+
+            // PCQ Types (Internet)
+            scriptPCQ += `add kind=pcq name="pcq_down_${rate}M" pcq-rate=${rate}M pcq-classifier=dst-address\n`;
+            scriptPCQ += `add kind=pcq name="pcq_up_${rate}M" pcq-rate=${rate}M pcq-classifier=src-address\n`;
+            
+            // PCQ Types (Extras - checking duplicates in real app would be better, but listing all is safer for script)
+            scriptPCQ += `add kind=pcq name="pcq_ggc_down_${ggc}M" pcq-rate=${ggc}M pcq-classifier=dst-address\n`;
+            scriptPCQ += `add kind=pcq name="pcq_ggc_up_${ggc}M" pcq-rate=${ggc}M pcq-classifier=src-address\n`;
+            scriptPCQ += `add kind=pcq name="pcq_fna_down_${fb}M" pcq-rate=${fb}M pcq-classifier=dst-address\n`;
+            scriptPCQ += `add kind=pcq name="pcq_fna_up_${fb}M" pcq-rate=${fb}M pcq-classifier=src-address\n`;
+            scriptPCQ += `add kind=pcq name="pcq_bcdn_down_${cdn}M" pcq-rate=${cdn}M pcq-classifier=dst-address\n`;
+            scriptPCQ += `add kind=pcq name="pcq_bcdn_up_${cdn}M" pcq-rate=${cdn}M pcq-classifier=src-address\n`;
+
+            // Simple Queues (Boosts)
+            const target = `${baseIp}.${startRange}.0/20`;
+            scriptQueues += `add name="GGC_P${i+1}" target=${target} dst="${ifGGC}" queue=pcq_ggc_up_${ggc}M/pcq_ggc_down_${ggc}M place-before=0\n`;
+            scriptQueues += `add name="FNA_P${i+1}" target=${target} dst="${ifFB}" queue=pcq_fna_up_${fb}M/pcq_fna_down_${fb}M place-before=0\n`;
+            scriptQueues += `add name="BCDN_P${i+1}" target=${target} dst="${ifCDN}" queue=pcq_bcdn_up_${cdn}M/pcq_bcdn_down_${cdn}M place-before=0\n`;
+            
+            // Main Internet Queue
+            scriptQueues += `add name="P${i+1}_${name}_Block" target=${target} queue=pcq_up_${rate}M/pcq_down_${rate}M comment="${rate} Mbps per user"\n`;
+
+            // Increment Octet for next plan (Jump by 16)
+            currentOctet += 16;
         }
 
-        function copyToClipboard() {
-            const copyText = document.getElementById("outputCode");
-            copyText.select();
-            copyText.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(copyText.value);
-            alert("HTML Code Copied!");
-        }
+        const fullScript = `# === Generated ISP Configuration ===
+# Base Network: ${baseIp}.0.0
+# Plans: 10
+# Generated by Sohag1192 Tool
 
-        // Generate on load
-        window.onload = generateHTML;
-    </script>
+${scriptPools}
+:global pppOnUp ":local remoteAddr \\$\\"remote-address\\"; :local callerId \\$\\"caller-id\\"; :log info \\"PPPLOG \\$user \\$callerId \\$remoteAddr\\""
+
+${scriptProfiles}
+${scriptNAT}
+${scriptMangle}
+${scriptRaw}
+${scriptPCQ}
+${scriptQueues}`;
+
+        document.getElementById('outFull').textContent = fullScript;
+        document.getElementById('outQueues').textContent = scriptPCQ + "\n" + scriptQueues;
+        document.getElementById('outIP').textContent = scriptPools + "\n" + scriptProfiles;
+    }
+
+    function showTab(id) {
+        document.querySelectorAll('.code-block').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function copyText(id) {
+        navigator.clipboard.writeText(document.getElementById(id).textContent);
+        alert("Copied!");
+    }
+
+    initTable();
+    // Auto-generate on load for preview
+    setTimeout(generateConfig, 500);
+</script>
+
 </body>
 </html>
