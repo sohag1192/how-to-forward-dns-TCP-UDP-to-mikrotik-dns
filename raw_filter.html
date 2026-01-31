@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MikroTik Raw Drop Generator | Sohag1192</title>
+    <meta name="description" content="Generate MikroTik /ip/firewall/raw rules to drop traffic efficiently. CPU-friendly blocking for DDoS and shared connection users.">
+    <meta name="author" content="Sohag1192">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛑</text></svg>">
+
+    <style>
+        :root { --primary: #c0392b; --bg: #fdf2f2; --text: #333; --code-bg: #1e1e1e; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
+        
+        .card { 
+            background: white; width: 100%; max-width: 900px; padding: 30px; 
+            border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            border-top: 6px solid var(--primary); 
+        }
+
+        .header { text-align: center; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .header h1 { margin: 0; color: var(--primary); }
+        .header p { margin: 5px 0 0; color: #666; font-size: 0.9em; }
+
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; }
+        .tab { padding: 10px 20px; cursor: pointer; font-weight: bold; color: #777; border-radius: 5px 5px 0 0; }
+        .tab.active { background: var(--primary); color: white; }
+        
+        .panel { display: none; }
+        .panel.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 6px; color: #444; }
+        textarea { width: 100%; height: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: monospace; box-sizing: border-box; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+
+        .btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        .btn:hover { background: #a93226; }
+
+        .output-area { position: relative; margin-top: 20px; }
+        pre { background: var(--code-bg); color: #ff6b6b; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: 'Consolas', monospace; min-height: 100px; }
+        
+        .copy-btn { position: absolute; top: 10px; right: 10px; background: #555; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; }
+
+        .footer { text-align: center; margin-top: 20px; font-size: 13px; color: #888; }
+        .footer a { color: var(--primary); text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h1>🛑 MikroTik Raw Drop Generator</h1>
+        <p>CPU-Efficient Blocking (Pre-Conntrack)</p>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('ip')">1. Drop IP Ranges</div>
+        <div class="tab" onclick="switchTab('ttl')">2. Drop by TTL List</div>
+    </div>
+
+    <div id="ip" class="panel active">
+        <div class="input-group">
+            <label>Source IPs / Subnets to Drop (One per line)</label>
+            <textarea id="ipList" placeholder="123.10.0.0/20&#10;192.168.0.0/22&#10;10.10.10.5"></textarea>
+            <small style="color:#666">These IPs will be dropped instantly before connection tracking.</small>
+        </div>
+        <button class="btn" onclick="genIP()">Generate IP Drop Rules</button>
+    </div>
+
+    <div id="ttl" class="panel">
+        <div class="input-group">
+            <label>Source Address Lists (One per line)</label>
+            <textarea id="listNames" placeholder="RT-BLOCK-21&#10;RT-BLOCK-23"></textarea>
+        </div>
+        <div class="input-group">
+            <label>TTL Threshold (Less Than)</label>
+            <input type="number" id="ttlVal" value="63">
+            <small style="color:#666">Drops packets from these lists if TTL is less than this value (Anti-Tethering).</small>
+        </div>
+        <button class="btn" onclick="genTTL()">Generate TTL Drop Rules</button>
+    </div>
+
+    <div class="output-area">
+        <button class="copy-btn" onclick="copyCode()">Copy</button>
+        <pre id="output"># Rules will appear here...</pre>
+    </div>
+
+    <div class="footer">
+        Developed by <a href="https://github.com/sohag1192/" target="_blank">Sohag1192</a>
+    </div>
+</div>
+
+<script>
+    function switchTab(id) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function genIP() {
+        const lines = document.getElementById('ipList').value.split('\n');
+        let script = `/ip firewall raw\n`;
+        let count = 0;
+
+        lines.forEach(line => {
+            const ip = line.trim();
+            if(!ip) return;
+            script += `add action=drop chain=prerouting src-address=${ip} comment="Drop-Range"\n`;
+            count++;
+        });
+
+        if(count === 0) script += `# No IPs entered...`;
+        document.getElementById('output').textContent = script;
+    }
+
+    function genTTL() {
+        const lines = document.getElementById('listNames').value.split('\n');
+        const ttl = document.getElementById('ttlVal').value;
+        let script = `/ip firewall raw\n`;
+        let count = 0;
+
+        lines.forEach(line => {
+            const list = line.trim();
+            if(!list) return;
+            script += `add action=drop chain=prerouting src-address-list=${list} ttl=less-than:${ttl} comment="Block-Shared-User"\n`;
+            count++;
+        });
+
+        if(count === 0) script += `# No lists entered...`;
+        document.getElementById('output').textContent = script;
+    }
+
+    function copyCode() {
+        const text = document.getElementById('output').textContent;
+        navigator.clipboard.writeText(text);
+        alert("Copied!");
+    }
+</script>
+
+</body>
+</html>
