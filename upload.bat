@@ -5,7 +5,7 @@ REM  Author    : sohag1192
 REM  Date      : %date% %time%
 REM ============================================
 
-cd /d "C:\Users\sohag\Downloads\how-to-forward-dns-TCP-UDP-to-mikrotik-dns"
+cd /d "C:\Users\USER\Downloads\GitHub_Upload\MikroTik-Script-Generators"
 
 IF NOT EXIST ".git" (
     echo Initializing new Git repository...

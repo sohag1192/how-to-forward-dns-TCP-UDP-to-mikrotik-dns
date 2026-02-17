@@ -6,13 +6,21 @@
     <title>MikroTik ISP Generator (v7 - Full Interfaces)</title>
     <style>
         :root { --primary: #0f172a; --accent: #3b82f6; --bg: #f1f5f9; --panel: #ffffff; --border: #cbd5e1; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: #334155; padding: 20px; line-height: 1.5; }
-        .container { max-width: 1400px; margin: 0 auto; }
         
-        h1 { color: var(--primary); margin-bottom: 20px; border-bottom: 3px solid var(--accent); display: inline-block; padding-bottom: 5px; }
+        /* Reset body to allow full-width navbar */
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: #334155; line-height: 1.5; }
+        
+        /* Navbar Styles */
+        .navbar-dark { background-color: var(--primary); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 30px; }
+        .nav-brand { color: white; font-size: 1.25rem; font-weight: bold; letter-spacing: 0.5px; }
+        .nav-links a { color: #cbd5e1; text-decoration: none; margin-left: 25px; font-weight: 500; font-size: 0.95rem; transition: color 0.2s ease; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent); }
+
+        /* Layout */
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 20px 20px 20px; }
+        h1 { color: var(--primary); margin-bottom: 20px; border-bottom: 3px solid var(--accent); display: inline-block; padding-bottom: 5px; margin-top: 0;}
         h2 { font-size: 1.1rem; margin-top: 0; color: var(--accent); border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px;}
         
-        /* Layout */
         .grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
         @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
         
@@ -22,7 +30,7 @@
         /* Inputs */
         label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; color: #64748b; }
         input[type="text"], input[type="number"] { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 12px; font-family: monospace; font-size: 0.9rem; box-sizing: border-box; }
-        input:focus { border-color: var(--accent); outline: none; ring: 2px var(--accent); }
+        input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
 
         /* Output */
         textarea { width: 100%; height: 700px; background: #1e293b; color: #e2e8f0; font-family: 'Consolas', monospace; font-size: 13px; padding: 15px; border-radius: 6px; border: none; resize: vertical; }
@@ -33,12 +41,22 @@
         button.btn-gen:active { transform: translateY(1px); }
 
         /* Package Grid */
-        .pkg-grid { display: grid; grid-template-columns: 30px 2fr 1fr 1fr 1fr; gap: 8px; align-items: center; margin-bottom: 5px; font-size: 0.85rem; }
+        .pkg-grid { display: grid; grid-template-columns: 35px 2fr 1fr 1fr 1fr; gap: 8px; align-items: center; margin-bottom: 5px; font-size: 0.85rem; }
         .pkg-header { font-weight: bold; background: #f8fafc; padding: 8px; border-bottom: 2px solid var(--border); }
         .interface-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     </style>
 </head>
 <body>
+
+<nav class="navbar-dark">
+    <div class="nav-brand">🌐 ISP Admin</div>
+    <div class="nav-links">
+        <a href="/pppoe_server" class="active">Home</a>
+        <a href="index.html">V1_Package</a>
+        <a href="index_v2.html">V2_Package</a>
+        <a href="#">Settings</a>
+    </div>
+</nav>
 
 <div class="container">
     <h1>MikroTik v7 Generator (Multi-Interface)</h1>
@@ -49,11 +67,11 @@
             <div class="card">
                 <h2>🌐 Network Setup</h2>
                 <label>Starting Pool Network</label>
-                <input type="text" id="startIP" value="172.21.96.0">
+                <input type="text" id="startIP" value="172.20.0.0">
                 <div style="font-size: 0.75rem; color: #94a3b8; margin-top: -8px; margin-bottom: 10px;">Autogenerates 10 subnets (/20)</div>
 
                 <label>DNS Servers</label>
-                <input type="text" id="dns" value="8.8.8.8,8.8.4.4">
+                <input type="text" id="dns" value="8.8.8.8,1.1.1.1">
             </div>
 
             <div class="card">
@@ -100,7 +118,7 @@
                     <div>Price</div>
                     <div>Boost (M)</div>
                 </div>
-                <div id="packagesContainer"></div>
+                <div id="packagesContainerP"></div>
             </div>
 
             <div class="card">
@@ -112,8 +130,8 @@
 </div>
 
 <script>
-    // Default Data
-    const defaults = [
+    // Default Data for P1 - P10
+    const defaultsP = [
         { name: "Bronze", rate: 20, price: 500, boost: 30 },
         { name: "Silver", rate: 25, price: 600, boost: 40 },
         { name: "Gold", rate: 35, price: 700, boost: 50 },
@@ -126,42 +144,73 @@
         { name: "Onyx", rate: 100, price: 2000, boost: 100 }
     ];
 
-    // Build Package Rows
-    const container = document.getElementById('packagesContainer');
-    defaults.forEach((pkg, index) => {
-        const i = index + 1;
-        container.innerHTML += `
-            <div class="pkg-grid">
-                <div style="font-weight:bold; color:#cbd5e1;">${i}</div>
-                <input type="text" id="name${i}" value="${pkg.name}">
-                <input type="number" id="rate${i}" value="${pkg.rate}">
-                <input type="number" id="price${i}" value="${pkg.price}">
-                <input type="number" id="boost${i}" value="${pkg.boost}">
-            </div>
-        `;
-    });
+    // Build Package Rows Utility
+    function buildGrid(containerId, defaults, prefix) {
+        const container = document.getElementById(containerId);
+        defaults.forEach((pkg, index) => {
+            const i = index + 1;
+            container.innerHTML += `
+                <div class="pkg-grid">
+                    <div style="font-weight:bold; color:#cbd5e1;">${prefix}${i}</div>
+                    <input type="text" id="name_${prefix}${i}" value="${pkg.name}">
+                    <input type="number" id="rate_${prefix}${i}" value="${pkg.rate}">
+                    <input type="number" id="price_${prefix}${i}" value="${pkg.price}">
+                    <input type="number" id="boost_${prefix}${i}" value="${pkg.boost}">
+                </div>
+            `;
+        });
+    }
 
-    // IP Calc Logic
+    // Initialize grid
+    buildGrid('packagesContainerP', defaultsP, 'P');
+
+    // IPv4 Math Utilities (prevents octet overflow errors)
+    function ipToInt(ip) {
+        return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
+    }
+    function intToIp(int) {
+        return [ (int >>> 24) & 255, (int >>> 16) & 255, (int >>> 8) & 255, int & 255 ].join('.');
+    }
+
     function calculateSubnets(startIP) {
-        let parts = startIP.split('.').map(Number);
+        let parts = startIP.split('.');
         if (parts.length !== 4) return null;
         
+        let startInt = ipToInt(startIP);
         let subnets = [];
-        let octet3 = parts[2];
+        
+        // Define sequence: P1-P10
+        const pkgKeys = [];
+        for(let i=1; i<=10; i++) pkgKeys.push({ prefix: 'P', num: i });
 
         for (let i = 0; i < 10; i++) {
-            let net = `${parts[0]}.${parts[1]}.${octet3}.0`;
-            let gateway = `${parts[0]}.${parts[1]}.${octet3}.1`;
-            let range = `${parts[0]}.${parts[1]}.${octet3}.2-${parts[0]}.${parts[1]}.${octet3 + 15}.254`;
+            let key = pkgKeys[i];
             
-            subnets.push({
-                cidr: `${net}/20`,
-                gateway: gateway,
-                range: range,
-                poolName: `pool_P${i+1}_${document.getElementById(`name${i+1}`).value.toLowerCase().replace(/\s/g,'_')}`
-            });
+            // A /20 contains 4096 IP addresses
+            let netInt = startInt + (i * 4096); 
+            let gatewayInt = netInt + 1;
+            let rangeStartInt = netInt + 2;
+            let rangeEndInt = netInt + 4094; // .254 of the last /24 in the block
 
-            octet3 += 16; 
+            let netIp = intToIp(netInt);
+            let gatewayIp = intToIp(gatewayInt);
+            let rangeIp = `${intToIp(rangeStartInt)}-${intToIp(rangeEndInt)}`;
+
+            let nameField = document.getElementById(`name_${key.prefix}${key.num}`).value;
+            let poolName = `pool_${key.prefix}${key.num}_${nameField.toLowerCase().replace(/\s/g,'_')}`;
+
+            subnets.push({
+                cidr: `${netIp}/20`,
+                gateway: gatewayIp,
+                range: rangeIp,
+                poolName: poolName,
+                prefix: key.prefix,
+                num: key.num,
+                name: nameField,
+                rate: document.getElementById(`rate_${key.prefix}${key.num}`).value,
+                price: document.getElementById(`price_${key.prefix}${key.num}`).value,
+                boost: document.getElementById(`boost_${key.prefix}${key.num}`).value
+            });
         }
         return subnets;
     }
@@ -198,31 +247,27 @@
 
         // 3. PROFILES
         s += `# --- 3. PPP PROFILES ---\n/ppp profile\n`;
-        subnets.forEach((net, i) => {
-            const idx = i+1;
-            const name = document.getElementById(`name${idx}`).value;
-            const rate = document.getElementById(`rate${idx}`).value;
-            const price = document.getElementById(`price${idx}`).value;
-            s += `add name="P${idx}_${name}_${rate}Mbps" local-address=${net.gateway} remote-address="${net.poolName}" \\\n`;
-            s += `    only-one=yes on-up=$pppOnUp dns-server=${dns} rate-limit=${rate}M/${rate}M comment="Price: ${price} Tk - ${rate} Mbps"\n\n`;
+        subnets.forEach(net => {
+            s += `add name="${net.prefix}${net.num}_${net.name}_${net.rate}Mbps" local-address=${net.gateway} remote-address="${net.poolName}" \\\n`;
+            s += `    only-one=yes on-up=$pppOnUp dns-server=${dns} rate-limit=${net.rate}M/${net.rate}M comment="Price: ${net.price} Tk - ${net.rate} Mbps"\n\n`;
         });
 
-        // 4. FIREWALL
+        // 4. FIREWALL (Using /16 to perfectly cover 10 consecutive /20 networks safely)
+        let fwBaseIP = intToIp(ipToInt(startIP)); // Clean formatted base IP
         s += `# --- 4. FIREWALL ---\n/ip firewall nat\n`;
-        s += `add chain=srcnat action=masquerade src-address=${startIP}/16 comment="NAT for All Packages"\n\n`;
+        s += `add chain=srcnat action=masquerade src-address=${fwBaseIP}/16 comment="NAT for All Packages"\n\n`;
         s += `/ip firewall mangle\n`;
-        s += `add chain=forward action=add-src-to-address-list address-list=2_RT_BLOCK address-list-timeout=30s src-address=${startIP}/16 in-interface=all-ppp connection-state=established ttl=1-61 comment="Detect Shared Connection"\n\n`;
+        s += `add chain=forward action=add-src-to-address-list address-list=2_RT_BLOCK address-list-timeout=30s src-address=${fwBaseIP}/16 in-interface=all-ppp connection-state=established ttl=1-61 comment="Detect Shared Connection"\n\n`;
         s += `/ip firewall raw\n`;
         s += `add chain=prerouting action=drop src-address-list=2_RT_BLOCK ttl=1-62 comment="Drop Shared Connection"\n\n`;
 
         // 5. QUEUE TYPES
         s += `# --- 5. QUEUE TYPES (PCQ) ---\n/queue type\n`;
-        
         let rates = new Set();
-        for(let i=1; i<=10; i++) {
-            rates.add(parseInt(document.getElementById(`rate${i}`).value));
-            rates.add(parseInt(document.getElementById(`boost${i}`).value));
-        }
+        subnets.forEach(net => {
+            rates.add(parseInt(net.rate));
+            rates.add(parseInt(net.boost));
+        });
         let sortedRates = Array.from(rates).sort((a,b)=>a-b);
 
         // General Types
@@ -240,28 +285,21 @@
 
         // 6. SIMPLE QUEUES (INTERFACES)
         s += `# --- 6. SIMPLE QUEUES (SPEED BOOSTS) ---\n/queue simple\n`;
-        
         interfaces.forEach(iface => {
             const intName = document.getElementById(iface.id).value.trim();
             if(!intName) return;
 
             s += `# --- ${iface.prefix} (${intName}) ---\n`;
-            
-            subnets.forEach((net, i) => {
-                const idx = i+1;
-                const boost = document.getElementById(`boost${idx}`).value;
-                s += `add name="${iface.prefix}_P${idx}" target=${net.cidr} dst="${intName}" queue=pcq_boost_up_${boost}M/pcq_boost_down_${boost}M place-before=0\n`;
+            subnets.forEach(net => {
+                s += `add name="${iface.prefix}_${net.prefix}${net.num}" target=${net.cidr} dst="${intName}" queue=pcq_boost_up_${net.boost}M/pcq_boost_down_${net.boost}M place-before=0\n`;
             });
             s += `\n`;
         });
 
         // 7. MAIN QUEUES
         s += `# --- 7. MAIN INTERNET QUEUES ---\n`;
-        subnets.forEach((net, i) => {
-            const idx = i+1;
-            const name = document.getElementById(`name${idx}`).value;
-            const rate = document.getElementById(`rate${idx}`).value;
-            s += `add name="P${idx}_${name}_Block" target=${net.cidr} queue=pcq_up_${rate}M/pcq_down_${rate}M comment="${rate} Mbps per user"\n`;
+        subnets.forEach(net => {
+            s += `add name="${net.prefix}${net.num}_${net.name}_Block" target=${net.cidr} queue=pcq_up_${net.rate}M/pcq_down_${net.rate}M comment="${net.rate} Mbps per user"\n`;
         });
 
         document.getElementById('output').value = s;
