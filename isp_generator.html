@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MikroTik ISP Config Generator | BDIX, GGC, FB, CDN</title>
+    <title>MikroTik ISP Config Generator | v7 - Full Interfaces</title>
     <meta name="description" content="Generate complete MikroTik ISP configurations: IP Pools, PPPoE Profiles, NAT, Mangle, and Traffic Shaping (PCQ) for BDIX, GGC, Facebook, CDN, FTP, and TikTok.">
     <meta name="keywords" content="MikroTik, ISP Script, RouterOS, BDIX Queue, GGC, Facebook Cache, PCQ, Bandwidth Management, Sohag1192">
     <meta name="author" content="Sohag1192">
@@ -22,16 +22,40 @@
             --bg: #f4f6f8; 
             --code-bg: #1e1e1e; 
             --border: #e0e0e0;
+            --success: #27ae60;
         }
 
+        /* Base Resets */
         body { 
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             background: var(--bg); 
             margin: 0; 
-            padding: 20px; 
+            padding: 0; 
             color: #333;
+        }
+
+        /* Navbar Styles */
+        .navbar-dark { 
+            background-color: var(--primary); 
+            padding: 15px 20px; 
             display: flex; 
-            justify-content: center; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .nav-brand { color: white; font-size: 1.25rem; font-weight: bold; letter-spacing: 0.5px; }
+        .nav-links { display: flex; gap: 15px; flex-wrap: wrap; }
+        .nav-links a { color: #cbd5e1; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: color 0.2s ease; }
+        .nav-links a:hover, .nav-links a.active { color: #3498db; }
+
+        /* Main Container */
+        .main-wrapper {
+            display: flex;
+            justify-content: center;
+            padding: 0 15px 30px 15px;
         }
 
         .app-container { 
@@ -49,11 +73,11 @@
         .header { 
             background: var(--primary); 
             color: white; 
-            padding: 25px; 
+            padding: 25px 20px; 
             text-align: center; 
             border-bottom: 4px solid var(--accent);
         }
-        .header h1 { margin: 0; font-size: 26px; letter-spacing: 0.5px; }
+        .header h1 { margin: 0; font-size: 24px; letter-spacing: 0.5px; line-height: 1.3; }
         .header p { margin: 8px 0 0; opacity: 0.85; font-size: 14px; }
 
         /* Sections */
@@ -74,13 +98,13 @@
         .general-controls { 
             padding: 20px; 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
             gap: 20px; 
         }
 
         .interface-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
             gap: 15px; 
             padding: 20px; 
             background: #fff; 
@@ -100,7 +124,7 @@
             border-radius: 6px; 
             box-sizing: border-box; 
             font-size: 14px; 
-            transition: 0.3s;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
         .control-group input:focus { 
             border-color: var(--accent); 
@@ -108,10 +132,18 @@
             box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.1); 
         }
 
-        /* Table */
-        .plans-section { padding: 0 0 20px 0; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th { background: #34495e; color: white; text-align: left; padding: 12px 15px; font-size: 0.9rem; }
+        /* Table (Responsive Scroll) */
+        .plans-section { 
+            padding: 0; 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            min-width: 800px; /* Forces scroll on small screens */
+        }
+        th { background: #34495e; color: white; text-align: left; padding: 12px 15px; font-size: 0.9rem; white-space: nowrap; }
         td { padding: 8px 15px; border-bottom: 1px solid #eee; }
         tr:hover { background-color: #f9f9f9; }
         
@@ -121,13 +153,19 @@
             border: 1px solid #ddd; 
             border-radius: 4px; 
             font-family: inherit;
+            box-sizing: border-box;
+            min-width: 60px;
+        }
+        input.table-input:focus {
+            border-color: var(--accent); 
+            outline: none;
         }
 
-        /* Buttons */
+        /* Button */
         .btn-gen { 
             background: var(--accent); 
             color: white; 
-            padding: 15px; 
+            padding: 18px; 
             border: none; 
             cursor: pointer; 
             font-weight: bold; 
@@ -142,13 +180,18 @@
         .btn-gen:hover { background: #1f618d; }
 
         /* Output Area */
-        .output-section { padding: 25px; background: #fafafa; border-top: 1px solid #ddd; position: relative; }
+        .output-section { 
+            padding: 20px; 
+            background: #fafafa; 
+            border-top: 1px solid #ddd; 
+            position: relative; 
+        }
         
         .copy-btn { 
             position: absolute; 
-            top: 25px; 
-            right: 25px; 
-            background: #27ae60; 
+            top: 35px; 
+            right: 35px; 
+            background: var(--success); 
             color: white; 
             border: none; 
             padding: 8px 18px; 
@@ -157,22 +200,26 @@
             font-weight: 600;
             font-size: 13px;
             z-index: 10;
+            transition: background 0.2s;
         }
         .copy-btn:hover { background: #219150; }
 
         pre { 
             background: var(--code-bg); 
             color: #a9b7c6; 
-            padding: 25px; 
+            padding: 40px 20px 20px 20px; /* Extra top padding for the absolute button */
             border-radius: 8px; 
             overflow-x: auto; 
             font-family: 'Consolas', 'Monaco', monospace; 
-            height: 600px; 
+            height: 500px; 
             font-size: 13px; 
             line-height: 1.5; 
             box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            margin: 0;
+            white-space: pre;
         }
 
+        /* Footer */
         .footer {
             text-align: center;
             padding: 20px;
@@ -182,93 +229,113 @@
             border-top: 1px solid #eee;
         }
         .footer a { color: var(--accent); text-decoration: none; font-weight: bold; }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .header h1 { font-size: 20px; }
+            .copy-btn { top: 30px; right: 30px; padding: 6px 12px; }
+            pre { padding-top: 50px; height: 400px; }
+            .section-title { font-size: 15px; padding: 12px 15px; }
+        }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div class="header">
-        <h1>🛠️ MikroTik ISP Config Generator</h1>
-        <p>Pools • Profiles • NAT • Mangle • PCQ Queues (BDIX, GGC, FB, CDN)</p>
+<nav class="navbar-dark">
+    <div class="nav-brand">🌐 ISP Admin</div>
+    <div class="nav-links">
+        <a href="/pppoe_server">Home</a>
+        <a href="index.html" class="active">V1_Package</a>
+        <a href="index_v2.html">V2_Package</a>
+        <a href="#">Settings</a>
     </div>
+</nav>
 
-    <div class="section-title">⚙️ General Network Settings</div>
-    <div class="general-controls">
-        <div class="control-group">
-            <label>Base IP Prefix</label>
-            <input type="text" id="baseIp" value="172.21" placeholder="e.g. 172.21">
+<div class="main-wrapper">
+    <div class="app-container">
+        <div class="header">
+            <h1>🛠️ MikroTik ISP Config Generator</h1>
+            <p>Pools • Profiles • NAT • Mangle • PCQ Queues (BDIX, GGC, FB, CDN)</p>
         </div>
-        <div class="control-group">
-            <label>Start Octet</label>
-            <input type="number" id="startOctet" value="96" placeholder="e.g. 96">
-        </div>
-        <div class="control-group">
-            <label>DNS Servers</label>
-            <input type="text" id="dns" value="8.8.8.8,8.8.4.4">
-        </div>
-    </div>
 
-    <div class="section-title">🔌 Interface Names (Queue Targets)</div>
-    <div class="interface-grid">
-        <div class="control-group">
-            <label>🇧🇩 BDIX Interface</label>
-            <input type="text" id="ifBDIX" value="1.1-2641-BDIX">
+        <div class="section-title">⚙️ General Network Settings</div>
+        <div class="general-controls">
+            <div class="control-group">
+                <label>Base IP Prefix</label>
+                <input type="text" id="baseIp" value="172.21" placeholder="e.g. 172.21">
+            </div>
+            <div class="control-group">
+                <label>Start Octet</label>
+                <input type="number" id="startOctet" value="96" placeholder="e.g. 96">
+            </div>
+            <div class="control-group">
+                <label>DNS Servers</label>
+                <input type="text" id="dns" value="8.8.8.8,8.8.4.4">
+            </div>
         </div>
-        <div class="control-group">
-            <label>🔍 GGC Interface</label>
-            <input type="text" id="ifGGC" value="1.3-2643-GGC">
-        </div>
-        <div class="control-group">
-            <label>📘 Facebook (FB)</label>
-            <input type="text" id="ifFB" value="1.4-2644-FB">
-        </div>
-        <div class="control-group">
-            <label>🚀 CDN (Akamai)</label>
-            <input type="text" id="ifCDN" value="1.5-2645-CDN">
-        </div>
-        <div class="control-group">
-            <label>📂 FTP Interface</label>
-            <input type="text" id="ifFTP" value="1.7-2647-FTP">
-        </div>
-        <div class="control-group">
-            <label>🎵 TikTok (TIK)</label>
-            <input type="text" id="ifTIK" value="1.8-2648-TIK">
-        </div>
-    </div>
 
-    <div class="section-title">📦 Package Configuration</div>
-    <div class="plans-section">
-        <table id="plansTable">
-            <thead>
-                <tr>
-                    <th width="5%">ID</th>
-                    <th width="15%">Plan Name</th>
-                    <th width="10%">Internet (M)</th>
-                    <th width="10%">BDIX/FTP (M)</th>
-                    <th width="10%">GGC (M)</th>
-                    <th width="10%">FB (M)</th>
-                    <th width="10%">CDN (M)</th>
-                    <th width="10%">TikTok (M)</th>
-                    <th width="10%">Price (Tk)</th>
-                </tr>
-            </thead>
-            <tbody>
-                </tbody>
-        </table>
-    </div>
-    
-    <button class="btn-gen" onclick="generateConfig()">
-        ⚡ Generate Full Configuration
-    </button>
+        <div class="section-title">🔌 Interface Names (Queue Targets)</div>
+        <div class="interface-grid">
+            <div class="control-group">
+                <label>🇧🇩 BDIX Interface</label>
+                <input type="text" id="ifBDIX" value="1.1-2641-BDIX">
+            </div>
+            <div class="control-group">
+                <label>🔍 GGC Interface</label>
+                <input type="text" id="ifGGC" value="1.3-2643-GGC">
+            </div>
+            <div class="control-group">
+                <label>📘 Facebook (FB)</label>
+                <input type="text" id="ifFB" value="1.4-2644-FB">
+            </div>
+            <div class="control-group">
+                <label>🚀 CDN (Akamai)</label>
+                <input type="text" id="ifCDN" value="1.5-2645-CDN">
+            </div>
+            <div class="control-group">
+                <label>📂 FTP Interface</label>
+                <input type="text" id="ifFTP" value="1.7-2647-FTP">
+            </div>
+            <div class="control-group">
+                <label>🎵 TikTok (TIK)</label>
+                <input type="text" id="ifTIK" value="1.8-2648-TIK">
+            </div>
+        </div>
 
-    <div class="output-section">
-        <button class="copy-btn" onclick="copyText()">📋 Copy Code</button>
-        <pre id="output"># Configure your plans above and click Generate...</pre>
-    </div>
+        <div class="section-title">📦 Package Configuration</div>
+        <div class="plans-section">
+            <table id="plansTable">
+                <thead>
+                    <tr>
+                        <th width="5%">ID</th>
+                        <th width="15%">Plan Name</th>
+                        <th width="10%">Net (M)</th>
+                        <th width="10%">BDIX/FTP (M)</th>
+                        <th width="10%">GGC (M)</th>
+                        <th width="10%">FB (M)</th>
+                        <th width="10%">CDN (M)</th>
+                        <th width="10%">TikTok (M)</th>
+                        <th width="10%">Price (Tk)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+        
+        <button class="btn-gen" onclick="generateConfig()">
+            ⚡ Generate Full Configuration
+        </button>
 
-    <div class="footer">
-        Developed by <a href="https://github.com/sohag1192/" target="_blank">Sohag1192</a> | 
-        <span style="font-size:11px">Part of UFW Firewall Generator Project</span>
+        <div class="output-section">
+            <button class="copy-btn" id="copyBtn" onclick="copyText()">📋 Copy Code</button>
+            <pre id="output"># Configure your plans above and click Generate...</pre>
+        </div>
+
+        <div class="footer">
+            Developed by <a href="https://github.com/sohag1192/" target="_blank">Sohag1192</a> | 
+            <span style="font-size:11px">Part of UFW Firewall Generator Project</span>
+        </div>
     </div>
 </div>
 
@@ -291,7 +358,7 @@
         const tbody = document.querySelector('#plansTable tbody');
         tbody.innerHTML = defaultPlans.map((p, i) => `
             <tr>
-                <td>P${i+1}</td>
+                <td style="font-weight: 600; color: #7f8c8d;">P${i+1}</td>
                 <td><input class="table-input" id="n${i}" value="${p.name}"></td>
                 <td><input class="table-input" type="number" id="net${i}" value="${p.net}"></td>
                 <td><input class="table-input" type="number" id="bdix${i}" value="${p.bdix}"></td>
@@ -310,12 +377,12 @@
         const dns = document.getElementById('dns').value;
 
         // Interfaces
-        const ifBDIX = document.getElementById('ifBDIX').value;
-        const ifGGC = document.getElementById('ifGGC').value;
-        const ifFB = document.getElementById('ifFB').value;
-        const ifCDN = document.getElementById('ifCDN').value;
-        const ifFTP = document.getElementById('ifFTP').value;
-        const ifTIK = document.getElementById('ifTIK').value;
+        const ifBDIX = document.getElementById('ifBDIX').value.trim();
+        const ifGGC = document.getElementById('ifGGC').value.trim();
+        const ifFB = document.getElementById('ifFB').value.trim();
+        const ifCDN = document.getElementById('ifCDN').value.trim();
+        const ifFTP = document.getElementById('ifFTP').value.trim();
+        const ifTIK = document.getElementById('ifTIK').value.trim();
 
         let sPools = "/ip pool\n";
         let sProfiles = "/ppp profile\n";
@@ -353,7 +420,7 @@
             // 3. NAT
             sNAT += `add chain=srcnat action=masquerade src-address=${target} comment="NAT for P${i+1} ${name}"\n`;
 
-            // 4. PCQ TYPES (Creating unique types to avoid conflicts)
+            // 4. PCQ TYPES
             sPCQ += `# --- P${i+1} Types ---\n`;
             sPCQ += `add kind=pcq name="pcq_P${i+1}_net_down" pcq-rate=${net}M pcq-classifier=dst-address\n`;
             sPCQ += `add kind=pcq name="pcq_P${i+1}_net_up" pcq-rate=${net}M pcq-classifier=src-address\n`;
@@ -371,16 +438,16 @@
             sPCQ += `add kind=pcq name="pcq_P${i+1}_cdn_up" pcq-rate=${cdn}M pcq-classifier=src-address\n`;
 
             sPCQ += `add kind=pcq name="pcq_P${i+1}_tik_down" pcq-rate=${tik}M pcq-classifier=dst-address\n`;
-            sPCQ += `add kind=pcq name="pcq_P${i+1}_tik_up" pcq-rate=${tik}M pcq-classifier=src-address\n`;
+            sPCQ += `add kind=pcq name="pcq_P${i+1}_tik_up" pcq-rate=${tik}M pcq-classifier=src-address\n\n`;
 
             // 5. SIMPLE QUEUES (Boosts First)
             sQueues += `# --- P${i+1} Queues ---\n`;
-            sQueues += `add name="BDIX_P${i+1}" target=${target} dst="${ifBDIX}" queue=pcq_P${i+1}_bdix_up/pcq_P${i+1}_bdix_down place-before=0\n`;
-            sQueues += `add name="FTP_P${i+1}" target=${target} dst="${ifFTP}" queue=pcq_P${i+1}_bdix_up/pcq_P${i+1}_bdix_down place-before=0\n`; 
-            sQueues += `add name="GGC_P${i+1}" target=${target} dst="${ifGGC}" queue=pcq_P${i+1}_ggc_up/pcq_P${i+1}_ggc_down place-before=0\n`;
-            sQueues += `add name="FB_P${i+1}" target=${target} dst="${ifFB}" queue=pcq_P${i+1}_fb_up/pcq_P${i+1}_fb_down place-before=0\n`;
-            sQueues += `add name="CDN_P${i+1}" target=${target} dst="${ifCDN}" queue=pcq_P${i+1}_cdn_up/pcq_P${i+1}_cdn_down place-before=0\n`;
-            sQueues += `add name="TIK_P${i+1}" target=${target} dst="${ifTIK}" queue=pcq_P${i+1}_tik_up/pcq_P${i+1}_tik_down place-before=0\n`;
+            if (ifBDIX) sQueues += `add name="BDIX_P${i+1}" target=${target} dst="${ifBDIX}" queue=pcq_P${i+1}_bdix_up/pcq_P${i+1}_bdix_down place-before=0\n`;
+            if (ifFTP) sQueues += `add name="FTP_P${i+1}" target=${target} dst="${ifFTP}" queue=pcq_P${i+1}_bdix_up/pcq_P${i+1}_bdix_down place-before=0\n`; 
+            if (ifGGC) sQueues += `add name="GGC_P${i+1}" target=${target} dst="${ifGGC}" queue=pcq_P${i+1}_ggc_up/pcq_P${i+1}_ggc_down place-before=0\n`;
+            if (ifFB) sQueues += `add name="FB_P${i+1}" target=${target} dst="${ifFB}" queue=pcq_P${i+1}_fb_up/pcq_P${i+1}_fb_down place-before=0\n`;
+            if (ifCDN) sQueues += `add name="CDN_P${i+1}" target=${target} dst="${ifCDN}" queue=pcq_P${i+1}_cdn_up/pcq_P${i+1}_cdn_down place-before=0\n`;
+            if (ifTIK) sQueues += `add name="TIK_P${i+1}" target=${target} dst="${ifTIK}" queue=pcq_P${i+1}_tik_up/pcq_P${i+1}_tik_down place-before=0\n`;
 
             // 6. MAIN INTERNET QUEUE (Last for this user)
             sQueues += `add name="P${i+1}_${name}_Block" target=${target} queue=pcq_P${i+1}_net_up/pcq_P${i+1}_net_down comment="--- MAIN INTERNET QUEUE P${i+1} ---"\n\n`;
@@ -422,12 +489,36 @@ ${sQueues}
     }
 
     function copyText() {
-        navigator.clipboard.writeText(document.getElementById('output').textContent);
-        alert("Script Copied to Clipboard! 📋");
+        const outputTextarea = document.getElementById('output');
+        const copyBtn = document.getElementById('copyBtn');
+        
+        if (outputTextarea.textContent.includes('Click Generate')) {
+            alert("Please generate the script first!");
+            return;
+        }
+
+        navigator.clipboard.writeText(outputTextarea.textContent).then(() => {
+            // Visual feedback
+            const originalText = copyBtn.innerText;
+            const originalBg = copyBtn.style.background;
+            
+            copyBtn.innerText = "✅ Copied!";
+            copyBtn.style.background = "#1e8449"; // Darker green
+            
+            setTimeout(() => {
+                copyBtn.innerText = "📋 Copy Code";
+                copyBtn.style.background = ""; // Revert to CSS class style
+            }, 2000);
+        }).catch(err => {
+            console.error("Failed to copy text: ", err);
+            alert("Failed to copy. Please manually select and copy the text.");
+        });
     }
 
+    // Initialize the table on load
     initTable();
-    // Generate preview
+    
+    // Generate an initial preview
     setTimeout(generateConfig, 500);
 </script>
 
