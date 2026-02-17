@@ -301,16 +301,20 @@
             if(!intName) return;
 
             s += `# --- ${iface.prefix} Queues ---\n`;
-            subnets.forEach(net => {
-                s += `add name="${iface.prefix}_${net.prefix}${net.num}_${net.name}" target=${net.cidr} dst="${intName}" queue=pcq_${iface.pcqPrefix}_up_${net.boost}M/pcq_${iface.pcqPrefix}_down_${net.boost}M place-before=0 comment="${iface.prefix}: ${net.boost}Mbps"\n`;
+            subnets.forEach((net, index) => {
+                // Add a visual separator for the first item of each interface block as well
+                let comment = index === 0 ? `--- ${iface.prefix} Queues --- (${net.boost}Mbps)` : `${iface.prefix}: ${net.boost}Mbps`;
+                s += `add name="${iface.prefix}_${net.prefix}${net.num}_${net.name}" target=${net.cidr} dst="${intName}" queue=pcq_${iface.pcqPrefix}_up_${net.boost}M/pcq_${iface.pcqPrefix}_down_${net.boost}M place-before=0 comment="${comment}"\n`;
             });
             s += `\n`;
         });
 
         // --- Main Queues ---
         s += `# --- Main Internet Queues ---\n`;
-        subnets.forEach(net => {
-            s += `add name="${net.prefix}${net.num}_${net.name}_Block" target=${net.cidr} queue=pcq_up_${net.rate}M/pcq_down_${net.rate}M comment="${net.rate} Mbps per user"\n`;
+        subnets.forEach((net, index) => {
+            // Add the specific "1st comment" separator for the Main Internet Queues
+            let queueComment = index === 0 ? `--- Main Internet Queues --- (${net.rate} Mbps)` : `${net.rate} Mbps per user`;
+            s += `add name="${net.prefix}${net.num}_${net.name}_Block" target=${net.cidr} queue=pcq_up_${net.rate}M/pcq_down_${net.rate}M comment="${queueComment}"\n`;
         });
 
         document.getElementById('output').value = s;
